@@ -1,4 +1,3 @@
-
 import { Module } from "../types";
 
 export const moduleData: Module[] = [
@@ -143,4 +142,4 @@ export const materials = [
   },
 ];
 
-export const defaultMeetLink = "https://meet.google.com/qdt-ught-pbf";
+export const defaultMeetLink = 'https://meet.google.com/qdt-ught-pbf';

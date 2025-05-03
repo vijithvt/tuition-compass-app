@@ -58,6 +58,7 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
         mode: (item.mode === 'offline' ? 'offline' : 'online') as 'online' | 'offline'
       })) || [];
 
+      console.log("Fetched classes:", typedData);
       setClasses(typedData);
     } catch (error) {
       console.error('Error fetching classes:', error);
@@ -255,7 +256,7 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {upcomingClasses.map((classItem) => (
-            <div key={classItem.id} className="schedule-card relative">
+            <div key={classItem.id} className="bg-white p-4 rounded-lg shadow border">
               {isEditable && (
                 <div className="absolute top-2 right-2 flex space-x-1">
                   <button 
@@ -274,12 +275,12 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
               )}
               <div className="flex justify-between">
                 <h3 className="font-medium">{formatDate(classItem.date)}</h3>
-                <span className={classItem.mode === 'online' ? 'badge-online' : 'badge-offline'}>
+                <span className={`${classItem.mode === 'online' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'} px-2 py-0.5 rounded-full text-xs font-medium`}>
                   {classItem.mode === 'online' ? 'Online' : 'Offline'}
                 </span>
               </div>
               
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-gray-700 mt-1">
                 {classItem.start_time.slice(0, 5)} - {classItem.end_time.slice(0, 5)}
               </div>
               
