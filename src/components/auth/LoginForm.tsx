@@ -18,6 +18,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("Attempting login with:", email);
 
     try {
       // Authenticate with Supabase
@@ -27,10 +28,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
       });
 
       if (error) {
+        console.error("Login error:", error.message);
         throw error;
       }
 
       if (data.user) {
+        console.log("Login successful:", data.user.id);
         toast({
           title: "Login successful",
           description: "Welcome back!",
@@ -38,6 +41,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
         onLogin();
       }
     } catch (error: any) {
+      console.error("Login error caught:", error);
       toast({
         title: "Login failed",
         description: error.message || "Please check your credentials and try again",

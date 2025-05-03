@@ -9,7 +9,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { ClassSession } from '@/types';
 import { defaultMeetLink } from '../../data/moduleData';
@@ -51,7 +52,13 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
         throw error;
       }
 
-      setClasses(data || []);
+      // Cast the mode to the correct type
+      const typedData = data?.map(item => ({
+        ...item,
+        mode: (item.mode === 'offline' ? 'offline' : 'online') as 'online' | 'offline'
+      })) || [];
+
+      setClasses(typedData);
     } catch (error) {
       console.error('Error fetching classes:', error);
       toast({
@@ -66,9 +73,26 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
 
   const handleSubmit = async () => {
     try {
+      // Ensure required fields are present
+      if (!newClass.date || !newClass.start_time || !newClass.end_time) {
+        toast({
+          variant: "destructive",
+          title: "Missing required fields",
+          description: "Please fill in all required fields."
+        });
+        return;
+      }
+
       // Update day based on date
-      const dayOfWeek = new Date(newClass.date as string).toLocaleDateString('en-US', { weekday: 'long' });
-      const classData = { ...newClass, day: dayOfWeek };
+      const dayOfWeek = new Date(newClass.date).toLocaleDateString('en-US', { weekday: 'long' });
+      const classData = { 
+        date: newClass.date, 
+        day: dayOfWeek,
+        start_time: newClass.start_time,
+        end_time: newClass.end_time,
+        mode: newClass.mode || 'online',
+        meet_link: newClass.mode === 'online' ? (newClass.meet_link || defaultMeetLink) : null
+      };
 
       const { error } = await supabase
         .from('classes')
@@ -78,7 +102,7 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
 
       toast({
         title: "Class added successfully",
-        description: `Class scheduled for ${format(new Date(newClass.date as string), 'MMM d, yyyy')}`
+        description: `Class scheduled for ${format(new Date(newClass.date), 'MMM d, yyyy')}`
       });
 
       setIsAddDialogOpen(false);
@@ -120,9 +144,26 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
     if (!selectedClass) return;
 
     try {
+      // Ensure required fields are present
+      if (!newClass.date || !newClass.start_time || !newClass.end_time) {
+        toast({
+          variant: "destructive",
+          title: "Missing required fields",
+          description: "Please fill in all required fields."
+        });
+        return;
+      }
+
       // Update day based on date
       const dayOfWeek = new Date(newClass.date as string).toLocaleDateString('en-US', { weekday: 'long' });
-      const classData = { ...newClass, day: dayOfWeek };
+      const classData = { 
+        date: newClass.date, 
+        day: dayOfWeek,
+        start_time: newClass.start_time,
+        end_time: newClass.end_time,
+        mode: newClass.mode || 'online',
+        meet_link: newClass.mode === 'online' ? (newClass.meet_link || defaultMeetLink) : null
+      };
 
       const { error } = await supabase
         .from('classes')
