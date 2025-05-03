@@ -9,7 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      classes: {
+        Row: {
+          created_at: string | null
+          date: string
+          day: string
+          end_time: string
+          id: string
+          meet_link: string | null
+          mode: string | null
+          start_time: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          day: string
+          end_time: string
+          id?: string
+          meet_link?: string | null
+          mode?: string | null
+          start_time: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          day?: string
+          end_time?: string
+          id?: string
+          meet_link?: string | null
+          mode?: string | null
+          start_time?: string
+        }
+        Relationships: []
+      }
+      materials: {
+        Row: {
+          created_by: string | null
+          description: string | null
+          file_type: string | null
+          file_url: string
+          id: string
+          lesson_id: string | null
+          module_id: string
+          title: string
+          upload_date: string | null
+        }
+        Insert: {
+          created_by?: string | null
+          description?: string | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          lesson_id?: string | null
+          module_id: string
+          title: string
+          upload_date?: string | null
+        }
+        Update: {
+          created_by?: string | null
+          description?: string | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          lesson_id?: string | null
+          module_id?: string
+          title?: string
+          upload_date?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

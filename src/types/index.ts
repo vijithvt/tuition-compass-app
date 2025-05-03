@@ -19,10 +19,12 @@ export interface Module {
 export interface ClassSession {
   id: string;
   date: string;
-  startTime: string;
-  endTime: string;
+  day: string;
+  start_time: string;
+  end_time: string;
   mode: 'online' | 'offline';
-  meetLink?: string;
+  meet_link?: string;
+  created_at?: string;
 }
 
 export interface Material {

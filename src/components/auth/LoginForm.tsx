@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginFormProps {
   onLogin: () => void;
@@ -14,29 +15,37 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Here we'd typically make an API call to authenticate
-    // For this demo, we'll use a mock login
-    setTimeout(() => {
-      // Mock credentials for demo purposes only
-      if (email === 'tutor@example.com' && password === 'password') {
+    try {
+      // Authenticate with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.user) {
         toast({
           title: "Login successful",
           description: "Welcome back!",
         });
         onLogin();
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Please check your credentials and try again",
-          variant: "destructive",
-        });
       }
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -102,9 +111,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
       </form>
       
       <div className="mt-4 text-sm text-center text-gray-600">
-        <p className="mb-2">Demo credentials:</p>
-        <p>Email: tutor@example.com</p>
-        <p>Password: password</p>
+        <p className="mb-2">Demo credentials for admin login:</p>
+        <p>Email: admin@example.com</p>
+        <p>Password: password123</p>
       </div>
     </div>
   );
