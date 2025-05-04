@@ -1,19 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { format, isAfter } from 'date-fns';
+import { format, isAfter, parseISO } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription
-} from "@/components/ui/dialog";
 import { ClassSession } from '@/types';
 import { defaultMeetLink } from '../../data/moduleData';
+import ClassScheduleItem from './ClassScheduleItem';
+import ClassDialogs from './ClassDialogs';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { differenceInHours, differenceInMinutes } from 'date-fns';
 
 interface ClassScheduleProps {
   isEditable: boolean;
@@ -33,7 +29,7 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
     mode: 'online',
     meet_link: defaultMeetLink
   });
-  const [copySuccess, setCopySuccess] = useState('');
+  const [teachingHours, setTeachingHours] = useState(0);
 
   useEffect(() => {
     fetchClasses();
@@ -58,8 +54,8 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
         mode: (item.mode === 'offline' ? 'offline' : 'online') as 'online' | 'offline'
       })) || [];
 
-      console.log("Fetched classes:", typedData);
       setClasses(typedData);
+      calculateTeachingHours(typedData);
     } catch (error) {
       console.error('Error fetching classes:', error);
       toast({
@@ -70,6 +66,25 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const calculateTeachingHours = (classData: ClassSession[]) => {
+    const now = new Date();
+    let totalMinutes = 0;
+    
+    classData.forEach(session => {
+      const sessionDate = parseISO(`${session.date}T${session.end_time}`);
+      
+      // Only count sessions that have already ended
+      if (sessionDate < now) {
+        const startTime = parseISO(`${session.date}T${session.start_time}`);
+        const endTime = parseISO(`${session.date}T${session.end_time}`);
+        const sessionMinutes = differenceInMinutes(endTime, startTime);
+        totalMinutes += sessionMinutes;
+      }
+    });
+    
+    setTeachingHours(Math.round(totalMinutes / 60 * 10) / 10); // Round to 1 decimal place
   };
 
   const handleSubmit = async () => {
@@ -216,280 +231,85 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
     }
   };
 
-  const handleCopyMeetLink = (link: string) => {
-    navigator.clipboard.writeText(link || defaultMeetLink)
-      .then(() => {
-        setCopySuccess('Copied!');
-        setTimeout(() => setCopySuccess(''), 2000);
-      })
-      .catch(err => console.error('Failed to copy: ', err));
-  };
-
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'MMM d, yyyy');
-  };
-
   const upcomingClasses = classes.filter(c => {
     const classDate = new Date(`${c.date}T${c.start_time}`);
     return isAfter(classDate, new Date());
   });
 
+  const pastClasses = classes.filter(c => {
+    const classDate = new Date(`${c.date}T${c.start_time}`);
+    return !isAfter(classDate, new Date());
+  });
+
   return (
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Upcoming Classes</h2>
-        {isEditable && (
-          <Button onClick={() => setIsAddDialogOpen(true)}>
-            Add Class
-          </Button>
-        )}
-      </div>
-      
-      {isLoading ? (
-        <div className="bg-muted p-6 rounded-lg text-center">
-          <p className="text-muted-foreground">Loading class schedule...</p>
-        </div>
-      ) : upcomingClasses.length === 0 ? (
-        <div className="bg-muted p-6 rounded-lg text-center">
-          <p className="text-muted-foreground">No upcoming classes scheduled.</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {upcomingClasses.map((classItem) => (
-            <div key={classItem.id} className="bg-white p-4 rounded-lg shadow border">
-              {isEditable && (
-                <div className="absolute top-2 right-2 flex space-x-1">
-                  <button 
-                    onClick={() => handleEdit(classItem)}
-                    className="p-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80"
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(classItem.id)}
-                    className="p-1 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/80"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <h3 className="font-medium">{formatDate(classItem.date)}</h3>
-                <span className={`${classItem.mode === 'online' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'} px-2 py-0.5 rounded-full text-xs font-medium`}>
-                  {classItem.mode === 'online' ? 'Online' : 'Offline'}
-                </span>
-              </div>
-              
-              <div className="text-sm text-gray-700 mt-1">
-                {classItem.start_time.slice(0, 5)} - {classItem.end_time.slice(0, 5)}
-              </div>
-              
-              {classItem.mode === 'online' && (
-                <div className="mt-2 flex items-center">
-                  <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm text-blue-600">
-                    {classItem.meet_link || defaultMeetLink}
-                  </div>
-                  <button 
-                    className="ml-2 text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded hover:bg-secondary/80"
-                    onClick={() => handleCopyMeetLink(classItem.meet_link || defaultMeetLink)}
-                  >
-                    {copySuccess || 'Copy'}
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-      
-      {/* Add Class Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Schedule a Class</DialogTitle>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <label htmlFor="date" className="font-medium">Date</label>
-              <input
-                type="date"
-                id="date"
-                value={newClass.date}
-                onChange={(e) => setNewClass({...newClass, date: e.target.value})}
-                className="w-full px-3 py-2 border rounded-md"
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <label htmlFor="startTime" className="font-medium">Start Time</label>
-                <input
-                  type="time"
-                  id="startTime"
-                  value={newClass.start_time}
-                  onChange={(e) => setNewClass({...newClass, start_time: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <label htmlFor="endTime" className="font-medium">End Time</label>
-                <input
-                  type="time"
-                  id="endTime"
-                  value={newClass.end_time}
-                  onChange={(e) => setNewClass({...newClass, end_time: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-            </div>
-            
-            <div className="grid gap-2">
-              <label className="font-medium">Mode</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="mode"
-                    value="online"
-                    checked={newClass.mode === 'online'}
-                    onChange={() => setNewClass({...newClass, mode: 'online'})}
-                    className="mr-2"
-                  />
-                  Online
-                </label>
-                
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="mode"
-                    value="offline"
-                    checked={newClass.mode === 'offline'}
-                    onChange={() => setNewClass({...newClass, mode: 'offline'})}
-                    className="mr-2"
-                  />
-                  Offline
-                </label>
-              </div>
-            </div>
-
-            {newClass.mode === 'online' && (
-              <div className="grid gap-2">
-                <label htmlFor="meetLink" className="font-medium">Meet Link</label>
-                <input
-                  type="text"
-                  id="meetLink"
-                  value={newClass.meet_link}
-                  onChange={(e) => setNewClass({...newClass, meet_link: e.target.value})}
-                  placeholder="https://meet.google.com/..."
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-            )}
+    <section id="schedule" className="py-12">
+      <Card className="bg-white">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl font-bold">Class Schedule</CardTitle>
+            <p className="text-muted-foreground mt-1">Total teaching hours: {teachingHours} hours</p>
           </div>
+          {isEditable && (
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              Add Class
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          <h3 className="text-lg font-semibold mb-4">Upcoming Classes</h3>
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit}>Add Class</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {isLoading ? (
+            <div className="bg-muted p-6 rounded-lg text-center">
+              <p className="text-muted-foreground">Loading class schedule...</p>
+            </div>
+          ) : upcomingClasses.length === 0 ? (
+            <div className="bg-muted p-6 rounded-lg text-center">
+              <p className="text-muted-foreground">No upcoming classes scheduled.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {upcomingClasses.map((classItem) => (
+                <ClassScheduleItem 
+                  key={classItem.id} 
+                  classItem={classItem} 
+                  isEditable={isEditable}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          )}
 
-      {/* Edit Class Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Class</DialogTitle>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <label htmlFor="edit-date" className="font-medium">Date</label>
-              <input
-                type="date"
-                id="edit-date"
-                value={newClass.date}
-                onChange={(e) => setNewClass({...newClass, date: e.target.value})}
-                className="w-full px-3 py-2 border rounded-md"
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <label htmlFor="edit-start-time" className="font-medium">Start Time</label>
-                <input
-                  type="time"
-                  id="edit-start-time"
-                  value={newClass.start_time}
-                  onChange={(e) => setNewClass({...newClass, start_time: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <label htmlFor="edit-end-time" className="font-medium">End Time</label>
-                <input
-                  type="time"
-                  id="edit-end-time"
-                  value={newClass.end_time}
-                  onChange={(e) => setNewClass({...newClass, end_time: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-            </div>
-            
-            <div className="grid gap-2">
-              <label className="font-medium">Mode</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="edit-mode"
-                    value="online"
-                    checked={newClass.mode === 'online'}
-                    onChange={() => setNewClass({...newClass, mode: 'online'})}
-                    className="mr-2"
+          {pastClasses.length > 0 && (
+            <>
+              <h3 className="text-lg font-semibold mb-4 mt-8">Past Classes</h3>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {pastClasses.map((classItem) => (
+                  <ClassScheduleItem 
+                    key={classItem.id} 
+                    classItem={classItem} 
+                    isEditable={isEditable}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
                   />
-                  Online
-                </label>
-                
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="edit-mode"
-                    value="offline"
-                    checked={newClass.mode === 'offline'}
-                    onChange={() => setNewClass({...newClass, mode: 'offline'})}
-                    className="mr-2"
-                  />
-                  Offline
-                </label>
+                ))}
               </div>
-            </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-            {newClass.mode === 'online' && (
-              <div className="grid gap-2">
-                <label htmlFor="edit-meet-link" className="font-medium">Meet Link</label>
-                <input
-                  type="text"
-                  id="edit-meet-link"
-                  value={newClass.meet_link}
-                  onChange={(e) => setNewClass({...newClass, meet_link: e.target.value})}
-                  placeholder="https://meet.google.com/..."
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleUpdate}>Update Class</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+      <ClassDialogs
+        isAddDialogOpen={isAddDialogOpen}
+        setIsAddDialogOpen={setIsAddDialogOpen}
+        isEditDialogOpen={isEditDialogOpen}
+        setIsEditDialogOpen={setIsEditDialogOpen}
+        newClass={newClass}
+        setNewClass={setNewClass}
+        handleSubmit={handleSubmit}
+        handleUpdate={handleUpdate}
+      />
+    </section>
   );
 };
 
