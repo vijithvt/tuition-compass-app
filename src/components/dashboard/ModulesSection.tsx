@@ -10,6 +10,11 @@ interface ModulesSectionProps {
 }
 
 const ModulesSection: React.FC<ModulesSectionProps> = ({ modules, isLoggedIn }) => {
+  const handleUpdateLesson = () => {
+    // This is where lesson update logic would be implemented
+    console.log("Updating lesson...");
+  };
+
   return (
     <section id="modules" className="mb-12">
       <h2 className="text-2xl font-bold mb-4">Course Modules</h2>
@@ -17,7 +22,7 @@ const ModulesSection: React.FC<ModulesSectionProps> = ({ modules, isLoggedIn }) 
         <ModuleAccordion 
           modules={modules} 
           isEditable={isLoggedIn}
-          onUpdateLesson={() => {}}
+          onUpdateLesson={handleUpdateLesson}
         />
       </ScrollArea>
     </section>
