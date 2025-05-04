@@ -4,19 +4,22 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { ClassSession } from '@/types';
 import { defaultMeetLink } from '../../data/moduleData';
+import { cn } from '@/lib/utils';
 
 interface ClassScheduleItemProps {
   classItem: ClassSession;
   isEditable: boolean;
   onEdit: (classItem: ClassSession) => void;
   onDelete: (id: string) => void;
+  isHighlighted?: boolean;
 }
 
 const ClassScheduleItem: React.FC<ClassScheduleItemProps> = ({ 
   classItem, 
   isEditable, 
   onEdit, 
-  onDelete 
+  onDelete,
+  isHighlighted = false
 }) => {
   const [copySuccess, setCopySuccess] = useState('');
 
@@ -34,7 +37,15 @@ const ClassScheduleItem: React.FC<ClassScheduleItemProps> = ({
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow border">
+    <div className={cn(
+      "bg-white p-4 rounded-lg shadow border relative", 
+      isHighlighted && "border-primary-500 bg-primary-50 shadow-md"
+    )}>
+      {isHighlighted && (
+        <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-bl">
+          Next Class
+        </div>
+      )}
       {isEditable && (
         <div className="absolute top-2 right-2 flex space-x-1">
           <button 

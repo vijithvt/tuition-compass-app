@@ -241,13 +241,16 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
     return !isAfter(classDate, new Date());
   });
 
+  // Get next 3-5 upcoming classes for featured display
+  const featuredClasses = upcomingClasses.slice(0, 5);
+  const remainingUpcomingClasses = upcomingClasses.slice(5);
+
   return (
     <section id="schedule" className="py-12">
       <Card className="bg-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-2xl font-bold">Class Schedule</CardTitle>
-            <p className="text-muted-foreground mt-1">Total teaching hours: {teachingHours} hours</p>
           </div>
           {isEditable && (
             <Button onClick={() => setIsAddDialogOpen(true)}>
@@ -267,16 +270,36 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
               <p className="text-muted-foreground">No upcoming classes scheduled.</p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {upcomingClasses.map((classItem) => (
-                <ClassScheduleItem 
-                  key={classItem.id} 
-                  classItem={classItem} 
-                  isEditable={isEditable}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+              {/* Featured upcoming classes (left side) */}
+              <div className="md:col-span-5 space-y-4">
+                {featuredClasses.map((classItem, index) => (
+                  <ClassScheduleItem 
+                    key={classItem.id} 
+                    classItem={classItem} 
+                    isEditable={isEditable}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    isHighlighted={index === 0}
+                  />
+                ))}
+              </div>
+              
+              {/* Remaining classes (right side) */}
+              <div className="md:col-span-7">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                  {remainingUpcomingClasses.map((classItem) => (
+                    <ClassScheduleItem 
+                      key={classItem.id} 
+                      classItem={classItem}
+                      isEditable={isEditable}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      isHighlighted={false}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

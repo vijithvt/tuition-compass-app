@@ -81,26 +81,6 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules }) => {
           <p className="text-sm text-muted-foreground">completed hours</p>
         </div>
       </div>
-      
-      <div className="mt-6">
-        <h3 className="text-lg font-medium mb-2">Module Progress</h3>
-        <div className="space-y-3">
-          {modules.map(module => {
-            const totalModuleLessons = module.lessons.length;
-            const completedModuleLessons = module.lessons.filter(l => l.status === 'completed').length;
-            const moduleProgress = totalModuleLessons > 0 ? 
-              Math.round((completedModuleLessons / totalModuleLessons) * 100) : 0;
-            
-            return (
-              <div key={module.id} className="flex items-center">
-                <div className="w-40 text-sm truncate mr-4">{module.title}</div>
-                <Progress value={moduleProgress} className="flex-1 mr-2" />
-                <span className="w-12 text-sm font-medium">{moduleProgress}%</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 };
