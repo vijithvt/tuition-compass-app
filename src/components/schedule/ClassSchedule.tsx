@@ -9,13 +9,13 @@ import { defaultMeetLink } from '../../data/moduleData';
 import ClassScheduleItem from './ClassScheduleItem';
 import ClassDialogs from './ClassDialogs';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { differenceInHours, differenceInMinutes } from 'date-fns';
 
 interface ClassScheduleProps {
   isEditable: boolean;
+  onClassesUpdate?: () => void;
 }
 
-const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
+const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable, onClassesUpdate }) => {
   const [classes, setClasses] = useState<ClassSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -29,7 +29,6 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
     mode: 'online',
     meet_link: defaultMeetLink
   });
-  const [teachingHours, setTeachingHours] = useState(0);
 
   useEffect(() => {
     fetchClasses();
@@ -55,7 +54,10 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
       })) || [];
 
       setClasses(typedData);
-      calculateTeachingHours(typedData);
+      
+      if (onClassesUpdate) {
+        onClassesUpdate();
+      }
     } catch (error) {
       console.error('Error fetching classes:', error);
       toast({
@@ -66,25 +68,6 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const calculateTeachingHours = (classData: ClassSession[]) => {
-    const now = new Date();
-    let totalMinutes = 0;
-    
-    classData.forEach(session => {
-      const sessionDate = parseISO(`${session.date}T${session.end_time}`);
-      
-      // Only count sessions that have already ended
-      if (sessionDate < now) {
-        const startTime = parseISO(`${session.date}T${session.start_time}`);
-        const endTime = parseISO(`${session.date}T${session.end_time}`);
-        const sessionMinutes = differenceInMinutes(endTime, startTime);
-        totalMinutes += sessionMinutes;
-      }
-    });
-    
-    setTeachingHours(Math.round(totalMinutes / 60 * 10) / 10); // Round to 1 decimal place
   };
 
   const handleSubmit = async () => {

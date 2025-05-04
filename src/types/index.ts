@@ -1,4 +1,3 @@
-
 export type LessonStatus = 'not-started' | 'in-progress' | 'completed';
 
 export interface Lesson {
@@ -23,8 +22,7 @@ export interface ClassSession {
   start_time: string;
   end_time: string;
   mode: 'online' | 'offline';
-  meet_link?: string;
-  created_at?: string;
+  meet_link: string | null;
 }
 
 export interface Material {

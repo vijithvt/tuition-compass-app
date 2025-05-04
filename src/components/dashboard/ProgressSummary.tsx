@@ -1,13 +1,15 @@
 
 import React, { useMemo } from 'react';
-import { Module } from '../../types';
+import { Module, ClassSession } from '../../types';
 import { Progress } from '@/components/ui/progress';
+import { differenceInMinutes, parseISO } from 'date-fns';
 
 interface ProgressSummaryProps {
   modules: Module[];
+  classes: ClassSession[];
 }
 
-const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules }) => {
+const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) => {
   const { totalLessons, completedLessons, inProgressLessons, notStartedLessons, totalDuration } = useMemo(() => {
     let total = 0;
     let completed = 0;
@@ -41,14 +43,30 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules }) => {
     };
   }, [modules]);
 
-  const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-  
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
+  // Calculate teaching hours from the completed class sessions
+  const teachingHours = useMemo(() => {
+    let totalMinutes = 0;
+    const now = new Date();
     
-    return `${hours}h ${mins}m`;
-  };
+    classes.forEach(session => {
+      const sessionDate = parseISO(`${session.date}T${session.end_time}`);
+      
+      // Only count sessions that have already ended
+      if (sessionDate < now) {
+        const startTime = parseISO(`${session.date}T${session.start_time}`);
+        const endTime = parseISO(`${session.date}T${session.end_time}`);
+        const sessionMinutes = differenceInMinutes(endTime, startTime);
+        totalMinutes += sessionMinutes;
+      }
+    });
+    
+    return {
+      hours: Math.floor(totalMinutes / 60),
+      minutes: totalMinutes % 60
+    };
+  }, [classes]);
+
+  const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return (
     <div className="mb-8 bg-white rounded-lg border shadow-sm p-6">
@@ -77,7 +95,7 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules }) => {
         
         <div className="bg-blue-50 rounded-lg p-4">
           <h3 className="text-lg font-medium mb-1">Total Teaching Time</h3>
-          <p className="text-3xl font-bold">{formatDuration(totalDuration)}</p>
+          <p className="text-3xl font-bold">{teachingHours.hours}h {teachingHours.minutes}m</p>
           <p className="text-sm text-muted-foreground">completed hours</p>
         </div>
       </div>

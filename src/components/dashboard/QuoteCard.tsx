@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 const programmingQuotes = [
   "Code is like humor. When you have to explain it, it's bad. – Cory House",
@@ -15,21 +16,66 @@ const programmingQuotes = [
   "Any fool can write code that a computer can understand. Good programmers write code that humans can understand. – Martin Fowler"
 ];
 
-export const QuoteCard: React.FC = () => {
-  const [quote, setQuote] = useState("");
+interface QuoteCardProps {
+  rotateQuotes?: boolean;
+  rotationInterval?: number; // in milliseconds
+}
+
+export const QuoteCard: React.FC<QuoteCardProps> = ({ 
+  rotateQuotes = true,
+  rotationInterval = 8000 
+}) => {
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   
   useEffect(() => {
+    // Initial random quote
     const randomIndex = Math.floor(Math.random() * programmingQuotes.length);
-    setQuote(programmingQuotes[randomIndex]);
-  }, []);
+    setCurrentQuoteIndex(randomIndex);
+    
+    // Set up rotation if enabled
+    if (rotateQuotes) {
+      const interval = setInterval(() => {
+        setCurrentQuoteIndex((prevIndex) => 
+          (prevIndex + 1) % programmingQuotes.length
+        );
+      }, rotationInterval);
+      
+      return () => clearInterval(interval);
+    }
+  }, [rotateQuotes, rotationInterval]);
   
   return (
-    <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100">
-      <CardContent className="py-6">
-        <blockquote className="italic text-gray-800 text-lg text-center">
-          "{quote}"
-        </blockquote>
+    <Card className="mb-8 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
+          <div className="flex items-center mb-4">
+            <div className="bg-white/20 p-2 rounded-full mr-3">
+              <span className="text-xl">💡</span>
+            </div>
+            <h3 className="text-white font-semibold">Coding Wisdom</h3>
+          </div>
+          
+          {rotateQuotes ? (
+            <Carousel className="w-full">
+              <CarouselContent>
+                {programmingQuotes.map((quote, index) => (
+                  <CarouselItem key={index} className={index === currentQuoteIndex ? 'block' : 'hidden'}>
+                    <blockquote className="italic text-white text-lg">
+                      "{quote}"
+                    </blockquote>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          ) : (
+            <blockquote className="italic text-white text-lg">
+              "{programmingQuotes[currentQuoteIndex]}"
+            </blockquote>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
 };
+
+export default QuoteCard;

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ModuleAccordion from '../components/modules/ModuleAccordion';
 import ProgressSummary from '../components/dashboard/ProgressSummary';
@@ -9,9 +9,10 @@ import LoginForm from '../components/auth/LoginForm';
 import { moduleData } from '../data/moduleData';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
-import { differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 import { QuoteCard } from '@/components/dashboard/QuoteCard';
+import ExamCountdown from '../components/dashboard/ExamCountdown';
+import { ClassSession } from '@/types';
 
 interface SinglePageLayoutProps {
   isLoggedIn: boolean;
@@ -19,29 +20,50 @@ interface SinglePageLayoutProps {
   onLogout: () => void;
 }
 
-const examDate = new Date('2025-05-19T00:00:00');
+const examDate = new Date('2025-05-19T09:00:00');
 
 const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin, onLogout }) => {
   const [modules] = useState(moduleData);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
-  const [timeToExam, setTimeToExam] = useState({
-    days: differenceInDays(examDate, new Date()),
-    hours: differenceInHours(examDate, new Date()) % 24,
-    minutes: differenceInMinutes(examDate, new Date()) % 60
-  });
+  const [classes, setClasses] = useState<ClassSession[]>([]);
+  const [nextClass, setNextClass] = useState<ClassSession | null>(null);
   
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      setTimeToExam({
-        days: differenceInDays(examDate, now),
-        hours: differenceInHours(examDate, now) % 24,
-        minutes: differenceInMinutes(examDate, now) % 60
-      });
-    }, 60000); // Update every minute
-    
-    return () => clearInterval(timer);
+  useEffect(() => {
+    fetchClasses();
   }, []);
+  
+  const fetchClasses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('*')
+        .order('date', { ascending: true })
+        .order('start_time', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      // Cast the mode to the correct type
+      const typedData = data?.map(item => ({
+        ...item,
+        mode: (item.mode === 'offline' ? 'offline' : 'online') as 'online' | 'offline'
+      })) || [];
+
+      setClasses(typedData);
+      
+      // Find the next upcoming class
+      const now = new Date();
+      const upcoming = typedData.find(cls => {
+        const classDate = new Date(`${cls.date}T${cls.start_time}`);
+        return classDate > now;
+      });
+      
+      setNextClass(upcoming || null);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
   
   const handleLoginClick = () => {
     setIsLoginDialogOpen(true);
@@ -50,6 +72,21 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
   const handleLoginSuccess = () => {
     setIsLoginDialogOpen(false);
     onLogin();
+  };
+  
+  const getNextClassText = () => {
+    if (!nextClass) return "";
+    
+    const classDate = new Date(`${nextClass.date}T${nextClass.start_time}`);
+    const now = new Date();
+    const diffInHours = Math.floor((classDate.getTime() - now.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 24) {
+      return `Next class in ${diffInHours} hours`;
+    } else {
+      const days = Math.floor(diffInHours / 24);
+      return `Next class in ${days} days`;
+    }
   };
 
   return (
@@ -64,11 +101,13 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center border border-orange-200 bg-orange-50 px-3 py-1 rounded-lg">
-                <span className="text-sm font-medium text-orange-700">
-                  Exam in: {timeToExam.days}d {timeToExam.hours}h {timeToExam.minutes}m
-                </span>
-              </div>
+              {nextClass && (
+                <div className="hidden md:flex items-center border border-orange-200 bg-orange-50 px-3 py-1 rounded-lg">
+                  <span className="text-sm font-medium text-orange-700">
+                    {getNextClassText()}
+                  </span>
+                </div>
+              )}
               
               <div className="hidden md:block">
                 <a href="#modules" className="text-gray-700 hover:text-primary px-3">Modules</a>
@@ -96,23 +135,31 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
       </header>
       
       <div className="container mx-auto px-4 py-8">
-        {/* Course Info Card */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-bold mb-2">Course Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-600"><span className="font-medium">Tutor:</span> Vijith V T</p>
-              <p className="text-gray-600"><span className="font-medium">Student:</span> Aadira Philip</p>
+        {/* Exam countdown and course info */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Course Info Card */}
+          <div className="md:col-span-2">
+            <div className="bg-white rounded-lg shadow-md p-6 h-full">
+              <h2 className="text-xl font-bold mb-4">Course Details</h2>
+              <div>
+                <p className="text-gray-600"><span className="font-medium">Tutor:</span> Vijith V T</p>
+                <p className="text-gray-600"><span className="font-medium">Student:</span> Aadira Philip</p>
+              </div>
             </div>
+          </div>
+          
+          {/* Exam Countdown */}
+          <div className="md:col-span-1">
+            <ExamCountdown examDate={examDate} examTitle="C Programming Final Exam" />
           </div>
         </div>
         
         {/* Motivational Quote */}
-        <QuoteCard />
+        <QuoteCard rotateQuotes={true} rotationInterval={10000} />
         
         {/* Progress Summary */}
         <section id="progress" className="mb-12">
-          <ProgressSummary modules={modules} />
+          <ProgressSummary modules={modules} classes={classes} />
         </section>
         
         {/* Modules Section */}
@@ -128,7 +175,10 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
         </section>
         
         {/* Schedule Section */}
-        <ClassSchedule isEditable={isLoggedIn} />
+        <ClassSchedule 
+          isEditable={isLoggedIn} 
+          onClassesUpdate={fetchClasses}
+        />
         
         {/* Materials Section */}
         <MaterialsPanel isEditable={isLoggedIn} />
