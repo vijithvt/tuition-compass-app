@@ -65,7 +65,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border rounded-md"
-              placeholder="admin@example.com"
+              placeholder="Enter your email"
               required
             />
           </div>
@@ -78,7 +78,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border rounded-md"
-              placeholder="password123"
+              placeholder="Enter your password"
               required
             />
           </div>
@@ -113,12 +113,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
           </div>
         </div>
       </form>
-      
-      <div className="mt-4 text-sm text-center text-gray-600">
-        <p className="mb-2">Demo credentials for admin login:</p>
-        <p>Email: admin@example.com</p>
-        <p>Password: password123</p>
-      </div>
     </div>
   );
 };

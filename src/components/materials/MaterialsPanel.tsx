@@ -2,8 +2,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useMaterialsManagement } from '../../hooks/useMaterialsManagement';
-import { moduleData } from '../../data/moduleData';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MaterialDialogs from './MaterialDialogs';
 import MaterialsTabContent from './MaterialsTabContent';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -33,7 +31,10 @@ const MaterialsPanel: React.FC<MaterialsPanelProps> = ({ isEditable }) => {
     <section id="materials" className="py-12">
       <Card className="bg-white">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl font-bold">Study Materials</CardTitle>
+          <div>
+            <CardTitle className="text-2xl font-bold">Study Materials</CardTitle>
+            <p className="text-muted-foreground mt-1">Complete C Programming Resources</p>
+          </div>
           {isEditable && (
             <Button onClick={() => setIsAddDialogOpen(true)}>
               Upload Material
@@ -41,39 +42,13 @@ const MaterialsPanel: React.FC<MaterialsPanelProps> = ({ isEditable }) => {
           )}
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="all">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">All Materials</TabsTrigger>
-              {moduleData.map(module => (
-                <TabsTrigger key={module.id} value={module.id}>
-                  {module.title.split(' ')[0]} {module.title.split(' ')[1] || ''}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            <TabsContent value="all">
-              <MaterialsTabContent
-                materials={allMaterials}
-                isLoading={isLoading}
-                isEditable={isEditable}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            </TabsContent>
-
-            {moduleData.map(module => (
-              <TabsContent key={module.id} value={module.id}>
-                <MaterialsTabContent
-                  materials={allMaterials}
-                  isLoading={isLoading}
-                  moduleId={module.id}
-                  isEditable={isEditable}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              </TabsContent>
-            ))}
-          </Tabs>
+          <MaterialsTabContent
+            materials={allMaterials}
+            isLoading={isLoading}
+            isEditable={isEditable}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </CardContent>
       </Card>
 

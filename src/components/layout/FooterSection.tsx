@@ -10,7 +10,6 @@ const FooterSection: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center md:text-left">
             <h3 className="font-bold text-lg mb-2">C Programming Course</h3>
-            <p className="text-sm text-gray-600">KTU B.Tech 2024 Scheme</p>
           </div>
           
           <div className="text-center">

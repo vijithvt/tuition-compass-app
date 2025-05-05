@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { isAfter } from 'date-fns';
 import { ClassSession } from '@/types';
 import ClassScheduleItem from './ClassScheduleItem';
+import { Button } from '@/components/ui/button';
 
 interface ClassListsProps {
   classes: ClassSession[];
@@ -19,6 +20,8 @@ const ClassLists: React.FC<ClassListsProps> = ({
   onEdit, 
   onDelete 
 }) => {
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false);
+  
   const upcomingClasses = classes.filter(c => {
     const classDate = new Date(`${c.date}T${c.start_time}`);
     return isAfter(classDate, new Date());
@@ -29,9 +32,10 @@ const ClassLists: React.FC<ClassListsProps> = ({
     return !isAfter(classDate, new Date());
   });
 
-  // Get next 5 upcoming classes for featured display
-  const featuredClasses = upcomingClasses.slice(0, 5);
-  const remainingUpcomingClasses = upcomingClasses.slice(5);
+  // Get next upcoming class
+  const nextUpcomingClass = upcomingClasses.length > 0 ? upcomingClasses[0] : null;
+  // Get remaining upcoming classes
+  const remainingUpcomingClasses = upcomingClasses.slice(1);
 
   if (isLoading) {
     return (
@@ -50,36 +54,59 @@ const ClassLists: React.FC<ClassListsProps> = ({
           <p className="text-muted-foreground">No upcoming classes scheduled.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          {/* Featured upcoming classes (left side) */}
-          <div className="md:col-span-5 space-y-4">
-            {featuredClasses.map((classItem, index) => (
+        <div className="space-y-4">
+          {nextUpcomingClass && (
+            <div className="mb-4">
               <ClassScheduleItem 
-                key={classItem.id} 
-                classItem={classItem} 
+                key={nextUpcomingClass.id} 
+                classItem={nextUpcomingClass} 
                 isEditable={isEditable}
                 onEdit={onEdit}
                 onDelete={onDelete}
-                isHighlighted={index === 0}
+                isHighlighted={true}
               />
-            ))}
-          </div>
-          
-          {/* Remaining classes (right side) */}
-          <div className="md:col-span-7">
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-              {remainingUpcomingClasses.map((classItem) => (
-                <ClassScheduleItem 
-                  key={classItem.id} 
-                  classItem={classItem}
-                  isEditable={isEditable}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  isHighlighted={false}
-                />
-              ))}
             </div>
-          </div>
+          )}
+          
+          {remainingUpcomingClasses.length > 0 && (
+            <>
+              {showAllUpcoming ? (
+                <div className="space-y-4">
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                    {remainingUpcomingClasses.map((classItem) => (
+                      <ClassScheduleItem 
+                        key={classItem.id} 
+                        classItem={classItem}
+                        isEditable={isEditable}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        isHighlighted={false}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex justify-center">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowAllUpcoming(false)}
+                      className="text-sm"
+                    >
+                      Hide Additional Classes
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowAllUpcoming(true)}
+                    className="text-sm"
+                  >
+                    Show {remainingUpcomingClasses.length} More Upcoming Classes
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 
