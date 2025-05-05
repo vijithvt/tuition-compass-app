@@ -54,7 +54,9 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
             
             <div className="hidden md:flex items-center space-x-4">
               <a href="#modules" className="text-gray-700 hover:text-primary px-3">Modules</a>
-              <a href="#schedule" className="text-gray-700 hover:text-primary px-3">Schedule</a>
+              {isLoggedIn && (
+                <a href="#schedule" className="text-gray-700 hover:text-primary px-3">Schedule</a>
+              )}
               <a href="#materials" className="text-gray-700 hover:text-primary px-3">Materials</a>
             </div>
             
@@ -97,7 +99,9 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
                 </div>
               )}
               <a href="#modules" className="text-gray-700 hover:text-primary py-1">Modules</a>
-              <a href="#schedule" className="text-gray-700 hover:text-primary py-1">Schedule</a>
+              {isLoggedIn && (
+                <a href="#schedule" className="text-gray-700 hover:text-primary py-1">Schedule</a>
+              )}
               <a href="#materials" className="text-gray-700 hover:text-primary py-1">Materials</a>
             </nav>
           </div>

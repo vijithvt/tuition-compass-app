@@ -6,40 +6,46 @@ import { toast } from '@/components/ui/use-toast';
 import { ClassSession } from '@/types';
 import { defaultMeetLink } from '../data/moduleData';
 
+// Separate functions for better organization
+const fetchClassesFromSupabase = async () => {
+  const { data, error } = await supabase
+    .from('classes')
+    .select('*')
+    .order('date', { ascending: true })
+    .order('start_time', { ascending: true });
+
+  if (error) throw error;
+
+  // Cast the mode to the correct type
+  return data?.map(item => ({
+    ...item,
+    mode: (item.mode === 'offline' ? 'offline' : 'online') as 'online' | 'offline'
+  })) || [];
+};
+
 export const useClassManagement = (onClassesUpdate?: () => void) => {
   const [classes, setClasses] = useState<ClassSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<ClassSession | null>(null);
-  const [newClass, setNewClass] = useState<Partial<ClassSession>>({
-    date: format(new Date(), 'yyyy-MM-dd'),
-    day: format(new Date(), 'EEEE'),
-    start_time: '18:00',
-    end_time: '20:00',
-    mode: 'online',
-    meet_link: defaultMeetLink
-  });
+  const [newClass, setNewClass] = useState<Partial<ClassSession>>(getDefaultNewClass());
+
+  function getDefaultNewClass(): Partial<ClassSession> {
+    return {
+      date: format(new Date(), 'yyyy-MM-dd'),
+      day: format(new Date(), 'EEEE'),
+      start_time: '18:00',
+      end_time: '20:00',
+      mode: 'online',
+      meet_link: defaultMeetLink
+    };
+  }
 
   const fetchClasses = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .order('date', { ascending: true })
-        .order('start_time', { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      // Cast the mode to the correct type
-      const typedData = data?.map(item => ({
-        ...item,
-        mode: (item.mode === 'offline' ? 'offline' : 'online') as 'online' | 'offline'
-      })) || [];
-
+      const typedData = await fetchClassesFromSupabase();
       setClasses(typedData);
       
       if (onClassesUpdate) {
@@ -59,58 +65,63 @@ export const useClassManagement = (onClassesUpdate?: () => void) => {
 
   const handleSubmit = async () => {
     try {
-      // Ensure required fields are present
-      if (!newClass.date || !newClass.start_time || !newClass.end_time) {
-        toast({
-          variant: "destructive",
-          title: "Missing required fields",
-          description: "Please fill in all required fields."
-        });
-        return;
-      }
+      if (!validateClassData(newClass)) return;
 
-      // Update day based on date
-      const dayOfWeek = new Date(newClass.date).toLocaleDateString('en-US', { weekday: 'long' });
-      const classData = { 
-        date: newClass.date, 
-        day: dayOfWeek,
-        start_time: newClass.start_time,
-        end_time: newClass.end_time,
-        mode: newClass.mode || 'online',
-        meet_link: newClass.mode === 'online' ? (newClass.meet_link || defaultMeetLink) : null
-      };
-
+      const classData = prepareClassData(newClass);
       const { error } = await supabase
         .from('classes')
         .insert([classData]);
 
       if (error) throw error;
 
-      toast({
-        title: "Class added successfully",
-        description: `Class scheduled for ${format(new Date(newClass.date), 'MMM d, yyyy')}`
-      });
-
-      setIsAddDialogOpen(false);
-      fetchClasses();
-      
-      // Reset form
-      setNewClass({
-        date: format(new Date(), 'yyyy-MM-dd'),
-        day: format(new Date(), 'EEEE'),
-        start_time: '18:00',
-        end_time: '20:00',
-        mode: 'online',
-        meet_link: defaultMeetLink
-      });
+      handleSuccessfulSubmit();
     } catch (error) {
-      console.error('Error adding class:', error);
+      handleSubmitError(error);
+    }
+  };
+
+  const validateClassData = (classData: Partial<ClassSession>): boolean => {
+    if (!classData.date || !classData.start_time || !classData.end_time) {
       toast({
         variant: "destructive",
-        title: "Failed to add class",
-        description: "Please try again."
+        title: "Missing required fields",
+        description: "Please fill in all required fields."
       });
+      return false;
     }
+    return true;
+  };
+
+  const prepareClassData = (classData: Partial<ClassSession>) => {
+    const dayOfWeek = new Date(classData.date as string).toLocaleDateString('en-US', { weekday: 'long' });
+    return { 
+      date: classData.date, 
+      day: dayOfWeek,
+      start_time: classData.start_time,
+      end_time: classData.end_time,
+      mode: classData.mode || 'online',
+      meet_link: classData.mode === 'online' ? (classData.meet_link || defaultMeetLink) : null
+    };
+  };
+
+  const handleSuccessfulSubmit = () => {
+    toast({
+      title: "Class added successfully",
+      description: `Class scheduled for ${format(new Date(newClass.date as string), 'MMM d, yyyy')}`
+    });
+
+    setIsAddDialogOpen(false);
+    fetchClasses();
+    setNewClass(getDefaultNewClass());
+  };
+
+  const handleSubmitError = (error: any) => {
+    console.error('Error adding class:', error);
+    toast({
+      variant: "destructive",
+      title: "Failed to add class",
+      description: "Please try again."
+    });
   };
 
   const handleEdit = (classItem: ClassSession) => {
@@ -130,27 +141,9 @@ export const useClassManagement = (onClassesUpdate?: () => void) => {
     if (!selectedClass) return;
 
     try {
-      // Ensure required fields are present
-      if (!newClass.date || !newClass.start_time || !newClass.end_time) {
-        toast({
-          variant: "destructive",
-          title: "Missing required fields",
-          description: "Please fill in all required fields."
-        });
-        return;
-      }
+      if (!validateClassData(newClass)) return;
 
-      // Update day based on date
-      const dayOfWeek = new Date(newClass.date as string).toLocaleDateString('en-US', { weekday: 'long' });
-      const classData = { 
-        date: newClass.date, 
-        day: dayOfWeek,
-        start_time: newClass.start_time,
-        end_time: newClass.end_time,
-        mode: newClass.mode || 'online',
-        meet_link: newClass.mode === 'online' ? (newClass.meet_link || defaultMeetLink) : null
-      };
-
+      const classData = prepareClassData(newClass);
       const { error } = await supabase
         .from('classes')
         .update(classData)

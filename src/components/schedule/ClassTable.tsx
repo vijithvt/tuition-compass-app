@@ -88,12 +88,12 @@ const ClassTable: React.FC<ClassTableProps> = ({
           {classesToShow.map((classItem, index) => {
             const classDate = new Date(`${classItem.date}T${classItem.start_time}`);
             const isPastClass = isPast(classDate);
-            const isNextUpcoming = index === 0 && !isPastClass && displayMode !== 'nextOnly';
+            const isNextUpcoming = index === 0 && !isPastClass;
             
             return (
               <TableRow 
                 key={classItem.id} 
-                className={isNextUpcoming ? "bg-primary-50 border-primary" : ""}
+                className={isNextUpcoming ? "bg-primary/10 border-primary" : ""}
               >
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{format(new Date(classItem.date), 'MMM dd, yyyy')}</TableCell>

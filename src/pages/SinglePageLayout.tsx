@@ -92,15 +92,12 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           {/* Course Info Section */}
           <CourseInfoSection examDate={examDate} nextClass={nextClass} />
           
-          {/* Motivational Quote */}
-          <QuoteCard rotateQuotes={true} rotationInterval={10000} />
-          
           {/* Progress Summary */}
           <section id="progress" className="mb-12">
             <ProgressSummary modules={modules} classes={classes} />
           </section>
           
-          {/* Class Schedule (Only full version for logged in users) */}
+          {/* Class Schedule (Only visible for logged-in tutors) */}
           {isLoggedIn && (
             <ClassSchedule 
               isEditable={isLoggedIn} 
@@ -111,6 +108,9 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           
           {/* Modules Section */}
           <ModulesSection modules={modules} isLoggedIn={isLoggedIn} />
+          
+          {/* Motivational Quote */}
+          <QuoteCard rotateQuotes={true} rotationInterval={10000} />
           
           {/* Materials Section */}
           <MaterialsPanel isEditable={isLoggedIn} />

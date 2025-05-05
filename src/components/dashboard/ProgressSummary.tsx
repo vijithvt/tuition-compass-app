@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Module, ClassSession } from '../../types';
 import { Progress } from '@/components/ui/progress';
-import { differenceInMinutes, parseISO } from 'date-fns';
+import { differenceInMinutes, parseISO, format } from 'date-fns';
 
 interface ProgressSummaryProps {
   modules: Module[];
@@ -10,12 +10,21 @@ interface ProgressSummaryProps {
 }
 
 const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) => {
-  const { totalLessons, completedLessons, inProgressLessons, notStartedLessons, totalDuration } = useMemo(() => {
+  const { 
+    totalLessons, 
+    completedLessons, 
+    inProgressLessons, 
+    notStartedLessons, 
+    totalDuration,
+    totalEstimatedHours,
+    remainingHours
+  } = useMemo(() => {
     let total = 0;
     let completed = 0;
     let inProgress = 0;
     let notStarted = 0;
     let duration = 0;
+    let totalEstimatedHours = 0;
     
     modules.forEach(module => {
       module.lessons.forEach(lesson => {
@@ -31,72 +40,118 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
         } else {
           notStarted++;
         }
+
+        // Sum up total estimated duration for all lessons
+        if (lesson.duration) {
+          totalEstimatedHours += lesson.duration;
+        }
       });
     });
     
+    const remainingHours = totalEstimatedHours - duration;
+
     return {
       totalLessons: total,
       completedLessons: completed,
       inProgressLessons: inProgress,
       notStartedLessons: notStarted,
-      totalDuration: duration
+      totalDuration: duration,
+      totalEstimatedHours,
+      remainingHours
     };
   }, [modules]);
 
   // Calculate teaching hours from the completed class sessions
   const teachingHours = useMemo(() => {
     let totalMinutes = 0;
+    let plannedMinutes = 0;
     const now = new Date();
     
     classes.forEach(session => {
       const sessionDate = parseISO(`${session.date}T${session.end_time}`);
+      const startTime = parseISO(`${session.date}T${session.start_time}`);
+      const endTime = parseISO(`${session.date}T${session.end_time}`);
+      const sessionMinutes = differenceInMinutes(endTime, startTime);
+
+      // Calculate total planned session time
+      plannedMinutes += sessionMinutes;
       
       // Only count sessions that have already ended
       if (sessionDate < now) {
-        const startTime = parseISO(`${session.date}T${session.start_time}`);
-        const endTime = parseISO(`${session.date}T${session.end_time}`);
-        const sessionMinutes = differenceInMinutes(endTime, startTime);
         totalMinutes += sessionMinutes;
       }
     });
     
     return {
-      hours: Math.floor(totalMinutes / 60),
-      minutes: totalMinutes % 60
+      completed: {
+        hours: Math.floor(totalMinutes / 60),
+        minutes: totalMinutes % 60
+      },
+      planned: {
+        hours: Math.floor(plannedMinutes / 60),
+        minutes: plannedMinutes % 60
+      },
+      remaining: {
+        hours: Math.floor((plannedMinutes - totalMinutes) / 60),
+        minutes: (plannedMinutes - totalMinutes) % 60
+      }
     };
   }, [classes]);
 
   const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const hoursProgress = teachingHours.planned.hours > 0 ? 
+    Math.round((teachingHours.completed.hours / teachingHours.planned.hours) * 100) : 0;
 
   return (
     <div className="mb-8 bg-white rounded-lg border shadow-sm p-6">
       <h2 className="text-2xl font-bold mb-4">Progress Summary</h2>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-secondary/50 rounded-lg p-4">
+        <div className="bg-secondary/20 rounded-lg p-4">
           <h3 className="text-lg font-medium mb-1">Overall Progress</h3>
-          <div className="flex items-center">
+          <div className="flex items-center mb-2">
             <Progress value={overallProgress} className="flex-1 mr-2" />
             <span className="font-medium">{overallProgress}%</span>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium">{completedLessons}</span> of {totalLessons} lessons completed
+          </div>
+          <div className="text-sm text-muted-foreground mt-1">
+            <span className="font-medium">{Math.round(remainingHours)}</span> estimated hours remaining
           </div>
         </div>
         
         <div className="bg-success/10 rounded-lg p-4">
-          <h3 className="text-lg font-medium mb-1">Completed</h3>
+          <h3 className="text-lg font-medium mb-1">Course Completion</h3>
           <p className="text-3xl font-bold">{completedLessons}</p>
-          <p className="text-sm text-muted-foreground">out of {totalLessons} lessons</p>
+          <div className="flex items-center mt-2">
+            <Progress value={overallProgress} className="flex-1 mr-2" />
+            <span className="font-medium">{overallProgress}%</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">of {totalLessons} lessons</p>
         </div>
         
         <div className="bg-warning/10 rounded-lg p-4">
           <h3 className="text-lg font-medium mb-1">In Progress</h3>
           <p className="text-3xl font-bold">{inProgressLessons}</p>
           <p className="text-sm text-muted-foreground">lessons currently active</p>
+          <div className="mt-2 text-sm">
+            <span className="font-medium">{notStartedLessons}</span> lessons not started
+          </div>
         </div>
         
         <div className="bg-blue-50 rounded-lg p-4">
-          <h3 className="text-lg font-medium mb-1">Total Teaching Time</h3>
-          <p className="text-3xl font-bold">{teachingHours.hours}h {teachingHours.minutes}m</p>
-          <p className="text-sm text-muted-foreground">completed hours</p>
+          <h3 className="text-lg font-medium mb-1">Live Teaching Hours</h3>
+          <p className="text-3xl font-bold">
+            {teachingHours.completed.hours}h {teachingHours.completed.minutes}m
+          </p>
+          <div className="flex items-center mt-2">
+            <Progress value={hoursProgress} className="flex-1 mr-2" />
+            <span className="font-medium">{hoursProgress}%</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            {teachingHours.remaining.hours}h {teachingHours.remaining.minutes}m remaining
+          </p>
         </div>
       </div>
     </div>
