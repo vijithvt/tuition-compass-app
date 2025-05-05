@@ -37,9 +37,12 @@ const SchedulePage: React.FC<SchedulePageProps> = ({ isLoggedIn, onLogin, onLogo
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Class Schedule</h1>
         
-        <ClassSchedule isEditable={isLoggedIn} />
+        <ClassSchedule 
+          isEditable={isLoggedIn} 
+          displayMode={isLoggedIn ? "full" : "nextOnly"} 
+        />
         
-        <div className="bg-white rounded-lg border shadow-sm p-6">
+        <div className="bg-white rounded-lg border shadow-sm p-6 mt-8">
           <h2 className="text-xl font-semibold mb-4">Online Class Information</h2>
           
           <div className="mb-4">

@@ -16,24 +16,24 @@ const ModulesSection: React.FC<ModulesSectionProps> = ({ modules, isLoggedIn }) 
     try {
       console.log("Updating lesson status:", { moduleId, lessonId, status });
       
-      // In a real implementation, this would update the database
-      // For now, we'll just show a success message
+      // Create a record in the lesson_progress table
+      const { error } = await supabase
+        .from('lesson_progress')
+        .upsert({
+          module_id: moduleId,
+          lesson_id: lessonId,
+          status: status,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'module_id,lesson_id'
+        });
+      
+      if (error) throw error;
+      
       toast({
         title: "Lesson status updated",
         description: `Lesson status has been set to ${status}`,
       });
-      
-      // Here's how you would update a lesson status in Supabase if there was a lessons table
-      // Uncomment this code when you have the appropriate table structure
-      /*
-      const { error } = await supabase
-        .from('lessons')
-        .update({ status: status })
-        .eq('module_id', moduleId)
-        .eq('lesson_id', lessonId);
-      
-      if (error) throw error;
-      */
       
     } catch (error) {
       console.error('Error updating lesson status:', error);

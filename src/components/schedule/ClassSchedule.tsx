@@ -2,16 +2,21 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useClassManagement } from '../../hooks/useClassManagement';
-import ClassLists from './ClassLists';
+import ClassTable from './ClassTable';
 import ClassDialogs from './ClassDialogs';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 interface ClassScheduleProps {
   isEditable: boolean;
   onClassesUpdate?: () => void;
+  displayMode?: 'full' | 'nextOnly';
 }
 
-const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable, onClassesUpdate }) => {
+const ClassSchedule: React.FC<ClassScheduleProps> = ({ 
+  isEditable, 
+  onClassesUpdate,
+  displayMode = 'full' 
+}) => {
   const { 
     classes, 
     isLoading, 
@@ -41,12 +46,13 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({ isEditable, onClassesUpda
           )}
         </CardHeader>
         <CardContent>
-          <ClassLists 
+          <ClassTable 
             classes={classes}
             isLoading={isLoading}
             isEditable={isEditable}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            displayMode={displayMode}
           />
         </CardContent>
       </Card>

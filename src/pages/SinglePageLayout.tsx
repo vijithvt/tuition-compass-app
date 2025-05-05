@@ -16,6 +16,7 @@ import HeaderSection from '../components/layout/HeaderSection';
 import FooterSection from '../components/layout/FooterSection';
 import CourseInfoSection from '../components/dashboard/CourseInfoSection';
 import ModulesSection from '../components/dashboard/ModulesSection';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface SinglePageLayoutProps {
   isLoggedIn: boolean;
@@ -89,25 +90,45 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
         />
         
         <div className="container mx-auto px-4 py-8">
-          {/* Exam countdown and course info */}
+          {/* Course Info Section */}
           <CourseInfoSection examDate={examDate} />
           
           {/* Motivational Quote */}
           <QuoteCard rotateQuotes={true} rotationInterval={10000} />
+          
+          {/* Next Class (For non-logged in users) */}
+          {!isLoggedIn && nextClass && (
+            <div className="mb-12 mt-8">
+              <Card className="bg-white border-primary shadow-md">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold mb-4 text-center">Next Class</h3>
+                  <div className="flex justify-center">
+                    <ClassSchedule 
+                      isEditable={false} 
+                      displayMode="nextOnly"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
           {/* Progress Summary */}
           <section id="progress" className="mb-12">
             <ProgressSummary modules={modules} classes={classes} />
           </section>
           
+          {/* Class Schedule (Only full version for logged in users) */}
+          {isLoggedIn && (
+            <ClassSchedule 
+              isEditable={isLoggedIn} 
+              onClassesUpdate={fetchClasses}
+              displayMode="full"
+            />
+          )}
+          
           {/* Modules Section */}
           <ModulesSection modules={modules} isLoggedIn={isLoggedIn} />
-          
-          {/* Schedule Section */}
-          <ClassSchedule 
-            isEditable={isLoggedIn} 
-            onClassesUpdate={fetchClasses}
-          />
           
           {/* Materials Section */}
           <MaterialsPanel isEditable={isLoggedIn} />
