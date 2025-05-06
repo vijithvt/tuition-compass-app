@@ -70,8 +70,7 @@ const MaterialsPage: React.FC<MaterialsPageProps> = ({ isLoggedIn, onLogin, onLo
       <Dialog open={isLoginDialogOpen} onOpenChange={setIsLoginDialogOpen}>
         <DialogContent className="sm:max-w-md p-0">
           <LoginForm 
-            onLogin={handleLoginSuccess} 
-            onCancel={() => setIsLoginDialogOpen(false)}
+            onLoginSuccess={handleLoginSuccess}
           />
         </DialogContent>
       </Dialog>

@@ -74,8 +74,7 @@ const SchedulePage: React.FC<SchedulePageProps> = ({ isLoggedIn, onLogin, onLogo
       <Dialog open={isLoginDialogOpen} onOpenChange={setIsLoginDialogOpen}>
         <DialogContent className="sm:max-w-md p-0">
           <LoginForm 
-            onLogin={handleLoginSuccess} 
-            onCancel={() => setIsLoginDialogOpen(false)}
+            onLoginSuccess={handleLoginSuccess}
           />
         </DialogContent>
       </Dialog>
