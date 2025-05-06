@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 interface ClassScheduleProps {
   isEditable: boolean;
   onClassesUpdate?: () => void;
-  displayMode?: 'full' | 'nextOnly';
+  displayMode?: 'full' | 'nextOnly' | 'completedOnly';
 }
 
 const ClassSchedule: React.FC<ClassScheduleProps> = ({ 
@@ -37,7 +37,11 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({
       <Card className="bg-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-2xl font-bold">Class Schedule</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              {displayMode === 'nextOnly' ? 'Next Class' : 
+               displayMode === 'completedOnly' ? 'Completed Classes' : 
+               'Class Schedule'}
+            </CardTitle>
           </div>
           {isEditable && (
             <Button onClick={() => setIsAddDialogOpen(true)}>
@@ -57,16 +61,18 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({
         </CardContent>
       </Card>
 
-      <ClassDialogs
-        isAddDialogOpen={isAddDialogOpen}
-        setIsAddDialogOpen={setIsAddDialogOpen}
-        isEditDialogOpen={isEditDialogOpen}
-        setIsEditDialogOpen={setIsEditDialogOpen}
-        newClass={newClass}
-        setNewClass={setNewClass}
-        handleSubmit={handleSubmit}
-        handleUpdate={handleUpdate}
-      />
+      {isEditable && (
+        <ClassDialogs
+          isAddDialogOpen={isAddDialogOpen}
+          setIsAddDialogOpen={setIsAddDialogOpen}
+          isEditDialogOpen={isEditDialogOpen}
+          setIsEditDialogOpen={setIsEditDialogOpen}
+          newClass={newClass}
+          setNewClass={setNewClass}
+          handleSubmit={handleSubmit}
+          handleUpdate={handleUpdate}
+        />
+      )}
     </section>
   );
 };

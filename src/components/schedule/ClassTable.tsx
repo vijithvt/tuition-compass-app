@@ -19,7 +19,7 @@ interface ClassTableProps {
   isEditable: boolean;
   onEdit: (classItem: ClassSession) => void;
   onDelete: (id: string) => void;
-  displayMode?: 'full' | 'nextOnly';
+  displayMode?: 'full' | 'nextOnly' | 'completedOnly';
 }
 
 const ClassTable: React.FC<ClassTableProps> = ({ 
@@ -68,7 +68,16 @@ const ClassTable: React.FC<ClassTableProps> = ({
 
   // Get only the next upcoming class if displayMode is 'nextOnly'
   const nextClass = futureClasses.length > 0 ? [futureClasses[0]] : [];
-  const classesToShow = displayMode === 'nextOnly' ? nextClass : [...futureClasses, ...pastClasses];
+  
+  let classesToShow;
+  
+  if (displayMode === 'nextOnly') {
+    classesToShow = nextClass;
+  } else if (displayMode === 'completedOnly') {
+    classesToShow = pastClasses;
+  } else {
+    classesToShow = [...futureClasses, ...pastClasses];
+  }
 
   return (
     <div className="w-full overflow-auto">
@@ -88,7 +97,7 @@ const ClassTable: React.FC<ClassTableProps> = ({
           {classesToShow.map((classItem, index) => {
             const classDate = new Date(`${classItem.date}T${classItem.start_time}`);
             const isPastClass = isPast(classDate);
-            const isNextUpcoming = index === 0 && !isPastClass;
+            const isNextUpcoming = index === 0 && displayMode === 'nextOnly';
             
             return (
               <TableRow 

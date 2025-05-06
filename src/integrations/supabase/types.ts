@@ -42,6 +42,30 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_progress: {
+        Row: {
+          id: string
+          lesson_id: string
+          module_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lesson_id: string
+          module_id: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lesson_id?: string
+          module_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       materials: {
         Row: {
           created_by: string | null

@@ -15,15 +15,14 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
     completedLessons, 
     inProgressLessons, 
     notStartedLessons, 
-    totalDuration,
-    totalEstimatedHours,
-    remainingHours
+    completedDuration,
+    totalEstimatedHours
   } = useMemo(() => {
     let total = 0;
     let completed = 0;
     let inProgress = 0;
     let notStarted = 0;
-    let duration = 0;
+    let completedDuration = 0;
     let totalEstimatedHours = 0;
     
     modules.forEach(module => {
@@ -33,7 +32,7 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
         if (lesson.status === 'completed') {
           completed++;
           if (lesson.duration) {
-            duration += lesson.duration;
+            completedDuration += lesson.duration;
           }
         } else if (lesson.status === 'in-progress') {
           inProgress++;
@@ -48,18 +47,18 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
       });
     });
     
-    const remainingHours = totalEstimatedHours - duration;
-
     return {
       totalLessons: total,
       completedLessons: completed,
       inProgressLessons: inProgress,
       notStartedLessons: notStarted,
-      totalDuration: duration,
-      totalEstimatedHours,
-      remainingHours
+      completedDuration,
+      totalEstimatedHours
     };
   }, [modules]);
+
+  // Calculate remaining hours
+  const remainingEstimatedHours = Math.max(0, totalEstimatedHours - completedDuration);
 
   // Calculate teaching hours from the completed class sessions
   const teachingHours = useMemo(() => {
@@ -117,7 +116,7 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
             <span className="font-medium">{completedLessons}</span> of {totalLessons} lessons completed
           </div>
           <div className="text-sm text-muted-foreground mt-1">
-            <span className="font-medium">{Math.round(remainingHours)}</span> estimated hours remaining
+            <span className="font-medium">{remainingEstimatedHours > 0 ? Math.round(remainingEstimatedHours) : 0}</span> estimated hours remaining
           </div>
         </div>
         

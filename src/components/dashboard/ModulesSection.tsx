@@ -16,10 +16,7 @@ const ModulesSection: React.FC<ModulesSectionProps> = ({ modules, isLoggedIn }) 
     try {
       console.log("Updating lesson status:", { moduleId, lessonId, status });
       
-      // Update lesson status in the moduleData object first
-      // (this updates the UI immediately, even if the database update fails)
-      
-      // Create a record in the lesson_progress table using a stored procedure or direct insert
+      // Create a record in the lesson_progress table
       const { error } = await supabase
         .from('lesson_progress')
         .upsert({

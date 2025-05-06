@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import ExamCountdown from './ExamCountdown';
 import { format, isFuture } from 'date-fns';
 import { ClassSession } from '@/types';
@@ -43,20 +43,18 @@ const CourseInfoSection: React.FC<CourseInfoSectionProps> = ({ examDate, nextCla
             
             {nextClass && (
               <div className="mt-6 border-t pt-4">
-                <h3 className="font-bold text-lg mb-3">Next Class</h3>
-                <div className="bg-slate-50 p-5 rounded-lg mx-auto md:max-w-[90%]">
-                  <div className="flex justify-between items-center mb-3">
-                    <p className="font-medium text-lg">{format(new Date(nextClass.date), 'MMM dd, yyyy')}</p>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      nextClass.mode === 'online' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      {nextClass.mode === 'online' ? 'Online' : 'Offline'}
-                    </span>
-                  </div>
+                <h3 className="font-bold text-lg mb-3 text-center">Next Class</h3>
+                <div className="bg-slate-50 p-5 rounded-lg mx-auto max-w-[300px] text-center">
+                  <p className="font-medium text-lg mb-2">{format(new Date(nextClass.date), 'MMM dd, yyyy')}</p>
+                  <span className={`inline-block px-3 py-1 mb-2 rounded-full text-sm font-medium ${
+                    nextClass.mode === 'online' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-orange-100 text-orange-800'
+                  }`}>
+                    {nextClass.mode === 'online' ? 'Online' : 'Offline'}
+                  </span>
                   
-                  <p className="text-gray-700 mb-4 text-center font-medium">
+                  <p className="text-gray-700 mb-4 font-medium">
                     {format(new Date(`2000-01-01T${nextClass.start_time}`), 'hh:mm a')} - {format(new Date(`2000-01-01T${nextClass.end_time}`), 'hh:mm a')}
                   </p>
                   
