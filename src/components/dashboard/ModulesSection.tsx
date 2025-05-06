@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ModuleAccordion from '../modules/ModuleAccordion';
-import { Module } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
+import { Module, LessonStatus } from '@/types';
 import { toast } from '@/components/ui/use-toast';
+import { useModuleProgress } from '@/hooks/useModuleProgress';
+import { Button } from '@/components/ui/button';
 
 interface ModulesSectionProps {
   modules: Module[];
@@ -12,101 +13,56 @@ interface ModulesSectionProps {
 }
 
 const ModulesSection: React.FC<ModulesSectionProps> = ({ modules, isLoggedIn }) => {
-  const [modulesList, setModulesList] = useState<Module[]>(modules);
+  const { 
+    modules: modulesList, 
+    isLoading, 
+    updateLessonStatus,
+    applyStatusUpdates
+  } = useModuleProgress(modules);
 
-  // Load lesson progress from database when component mounts
-  useEffect(() => {
-    const fetchLessonProgress = async () => {
-      if (isLoggedIn) {
-        try {
-          const { data, error } = await supabase.from('lesson_progress').select('*');
-          
-          if (error) {
-            console.error('Error fetching lesson progress:', error);
-            return;
-          }
-          
-          if (data && data.length > 0) {
-            // Update modules with the status data from database
-            const updatedModules = modules.map(module => ({
-              ...module,
-              lessons: module.lessons.map(lesson => {
-                const progressRecord = data.find(
-                  record => record.module_id === module.id && record.lesson_id === lesson.id
-                );
-                
-                return progressRecord 
-                  ? { ...lesson, status: progressRecord.status as 'not-started' | 'in-progress' | 'completed' }
-                  : lesson;
-              })
-            }));
-            
-            setModulesList(updatedModules);
-          }
-        } catch (error) {
-          console.error('Error fetching lesson progress:', error);
-        }
-      }
-    };
+  const handleUpdateLesson = async (moduleId: string, lessonId: string, updates: any) => {
+    if (updates.status) {
+      await updateLessonStatus(moduleId, lessonId, updates.status as LessonStatus);
+    }
+  };
+
+  const handleApplyRequestedUpdates = async () => {
+    const requestedUpdates = [
+      // C Fundamentals as Completed
+      { moduleTitle: "C Fundamentals", lessonTitle: "Control Statements", status: 'completed' as LessonStatus },
+      
+      // Arrays & Strings modules in progress
+      { moduleTitle: "Arrays & Strings", lessonTitle: "1D & 2D Arrays", status: 'in-progress' as LessonStatus },
+      { moduleTitle: "Arrays & Strings", lessonTitle: "Enum, Typedef", status: 'in-progress' as LessonStatus },
+      { moduleTitle: "Arrays & Strings", lessonTitle: "Matrix Programs", status: 'in-progress' as LessonStatus }
+    ];
     
-    fetchLessonProgress();
-  }, [modules, isLoggedIn]);
-
-  const handleUpdateLesson = async (moduleId: string, lessonId: string, status: 'not-started' | 'in-progress' | 'completed') => {
-    try {
-      console.log("Updating lesson status:", { moduleId, lessonId, status });
-      
-      // Create or update a record in the lesson_progress table
-      const { error } = await supabase
-        .from('lesson_progress')
-        .upsert({
-          module_id: moduleId,
-          lesson_id: lessonId,
-          status: status,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'module_id,lesson_id'
-        });
-      
-      if (error) {
-        console.error('Error in upsert operation:', error);
-        throw error;
-      }
-      
-      // Update the local state with the new status
-      setModulesList(prevModules => 
-        prevModules.map(module => 
-          module.id === moduleId 
-            ? {
-                ...module,
-                lessons: module.lessons.map(lesson => 
-                  lesson.id === lessonId 
-                    ? { ...lesson, status } 
-                    : lesson
-                )
-              }
-            : module
-        )
-      );
-      
+    const success = await applyStatusUpdates(requestedUpdates);
+    
+    if (success) {
       toast({
-        title: "Lesson status updated",
-        description: `Lesson status has been set to ${status}`,
-      });
-      
-    } catch (error) {
-      console.error('Error updating lesson status:', error);
-      toast({
-        variant: "destructive",
-        title: "Failed to update lesson status",
-        description: "Please try again later."
+        title: "Status updates applied",
+        description: "The requested lesson statuses have been updated.",
       });
     }
   };
 
   return (
     <section id="modules" className="mb-12">
-      <h2 className="text-2xl font-bold mb-4">Course Modules</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Course Modules</h2>
+        
+        {isLoggedIn && (
+          <Button 
+            onClick={handleApplyRequestedUpdates}
+            variant="outline"
+            className="text-sm"
+          >
+            Apply Requested Updates
+          </Button>
+        )}
+      </div>
+      
       <ScrollArea className="h-[600px] rounded-md border p-4">
         <ModuleAccordion 
           modules={modulesList} 
