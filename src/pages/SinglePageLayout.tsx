@@ -129,36 +129,29 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           />
         )}
         
-        <CourseInfoSection 
-          examDate={examDate}
-          nextClass={nextClass}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="md:col-span-2">
+            <CourseInfoSection 
+              examDate={examDate}
+              nextClass={null} // Remove NextClass from CourseInfoSection
+            />
+          </div>
+          <div className="md:col-span-1">
+            {nextClass && (
+              <ClassSchedule 
+                isEditable={false}
+                displayMode="nextOnly"
+              />
+            )}
+          </div>
+        </div>
         
         <div id="classes" className="mb-12">
-          {isLoggedIn ? (
-            <ClassSchedule 
-              isEditable={isLoggedIn}
-              onClassesUpdate={fetchClasses}
-              displayMode="full"
-            />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1">
-                {nextClass && (
-                  <ClassSchedule 
-                    isEditable={false}
-                    displayMode="nextOnly"
-                  />
-                )}
-              </div>
-              <div className="md:col-span-2">
-                <ClassSchedule 
-                  isEditable={false}
-                  displayMode="completedOnly"
-                />
-              </div>
-            </div>
-          )}
+          <ClassSchedule 
+            isEditable={isLoggedIn}
+            onClassesUpdate={fetchClasses}
+            displayMode={isLoggedIn ? "full" : "completedOnly"}
+          />
         </div>
 
         <ModulesSection 

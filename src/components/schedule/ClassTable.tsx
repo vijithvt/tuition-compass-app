@@ -89,7 +89,7 @@ const ClassTable: React.FC<ClassTableProps> = ({
             <TableHead>Start Time</TableHead>
             <TableHead>End Time</TableHead>
             <TableHead>Class Mode</TableHead>
-            <TableHead>Status</TableHead>
+            {displayMode !== 'completedOnly' && <TableHead>Status</TableHead>}
             {isEditable && <TableHead className="text-right">Actions</TableHead>}
           </TableRow>
         </TableHeader>
@@ -117,16 +117,18 @@ const ClassTable: React.FC<ClassTableProps> = ({
                     {classItem.mode === 'online' ? 'Online' : 'Offline'}
                   </span>
                 </TableCell>
-                <TableCell>
-                  {isPastClass ? (
-                    <span className="inline-flex items-center text-green-600">
-                      <Check className="w-4 h-4 mr-1" />
-                      Completed
-                    </span>
-                  ) : (
-                    <span className="text-blue-600">Upcoming</span>
-                  )}
-                </TableCell>
+                {displayMode !== 'completedOnly' && (
+                  <TableCell>
+                    {isPastClass ? (
+                      <span className="inline-flex items-center text-green-600">
+                        <Check className="w-4 h-4 mr-1" />
+                        Completed
+                      </span>
+                    ) : (
+                      <span className="text-blue-600">Upcoming</span>
+                    )}
+                  </TableCell>
+                )}
                 {isEditable && (
                   <TableCell className="text-right space-x-2">
                     <Button 

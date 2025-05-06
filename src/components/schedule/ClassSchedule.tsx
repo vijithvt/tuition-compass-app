@@ -32,18 +32,20 @@ const ClassSchedule: React.FC<ClassScheduleProps> = ({
     handleDelete
   } = useClassManagement(onClassesUpdate);
 
+  const title = displayMode === 'nextOnly' 
+    ? 'Next Class' 
+    : displayMode === 'completedOnly' 
+      ? 'Completed Classes' 
+      : 'Class Schedule';
+
   return (
-    <section id="schedule" className="py-12">
+    <section id="schedule" className="py-6">
       <Card className="bg-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-2xl font-bold">
-              {displayMode === 'nextOnly' ? 'Next Class' : 
-               displayMode === 'completedOnly' ? 'Completed Classes' : 
-               'Class Schedule'}
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold">{title}</CardTitle>
           </div>
-          {isEditable && (
+          {isEditable && displayMode !== 'nextOnly' && displayMode !== 'completedOnly' && (
             <Button onClick={() => setIsAddDialogOpen(true)}>
               Add Class
             </Button>
