@@ -154,6 +154,31 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
           </p>
         </div>
       </div>
+      
+      {/* Add extra class progress details */}
+      <div className="mt-6 pt-4 border-t">
+        <h3 className="text-lg font-medium mb-3">Class Hours Breakdown</h3>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h4 className="font-medium mb-1 text-slate-600">Completed</h4>
+            <p className="text-2xl font-bold text-primary">
+              {teachingHours.completed.hours}h {teachingHours.completed.minutes}m
+            </p>
+          </div>
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h4 className="font-medium mb-1 text-slate-600">Planned</h4>
+            <p className="text-2xl font-bold text-slate-700">
+              {teachingHours.planned.hours}h {teachingHours.planned.minutes}m
+            </p>
+          </div>
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h4 className="font-medium mb-1 text-slate-600">Remaining</h4>
+            <p className="text-2xl font-bold text-blue-600">
+              {teachingHours.remaining.hours}h {teachingHours.remaining.minutes}m
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
