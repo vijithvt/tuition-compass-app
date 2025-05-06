@@ -23,7 +23,6 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
     let inProgress = 0;
     let notStarted = 0;
     let completedDuration = 0;
-    let totalEstimatedHours = 0;
     
     modules.forEach(module => {
       module.lessons.forEach(lesson => {
@@ -39,13 +38,11 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
         } else {
           notStarted++;
         }
-
-        // Sum up total estimated duration for all lessons
-        if (lesson.duration) {
-          totalEstimatedHours += lesson.duration;
-        }
       });
     });
+    
+    // Default estimated hours - total of 40 hours for the course
+    const totalEstimatedHours = 40; // Set a default value
     
     return {
       totalLessons: total,
@@ -57,8 +54,12 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
     };
   }, [modules]);
 
-  // Calculate remaining hours
-  const remainingEstimatedHours = Math.max(0, totalEstimatedHours - completedDuration);
+  // Calculate remaining hours based on percentage of lessons completed
+  const remainingEstimatedHours = useMemo(() => {
+    if (totalLessons === 0) return totalEstimatedHours;
+    const completionPercentage = completedLessons / totalLessons;
+    return Math.max(0, Math.round(totalEstimatedHours * (1 - completionPercentage)));
+  }, [totalLessons, completedLessons, totalEstimatedHours]);
 
   // Calculate teaching hours from the completed class sessions
   const teachingHours = useMemo(() => {
@@ -116,7 +117,7 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
             <span className="font-medium">{completedLessons}</span> of {totalLessons} lessons completed
           </div>
           <div className="text-sm text-muted-foreground mt-1">
-            <span className="font-medium">{remainingEstimatedHours > 0 ? Math.round(remainingEstimatedHours) : 0}</span> estimated hours remaining
+            <span className="font-medium">{remainingEstimatedHours}</span> estimated hours remaining
           </div>
         </div>
         

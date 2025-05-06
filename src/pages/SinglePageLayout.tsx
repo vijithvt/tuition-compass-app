@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { modules } from '../data/moduleData';
+import { moduleData } from '../data/moduleData';
 import { supabase } from '@/integrations/supabase/client';
 
 // Layout components
@@ -88,7 +88,7 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
 
   // Get progress data from modules
   const getProcessedModules = () => {
-    return modules.map(module => ({
+    return moduleData.map(module => ({
       ...module,
       lessons: module.lessons.map(lesson => ({
         ...lesson
@@ -175,7 +175,7 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
 
       <Dialog open={isLoginDialogOpen} onOpenChange={setIsLoginDialogOpen}>
         <DialogContent>
-          <LoginForm onSuccess={handleLoginSuccess} />
+          <LoginForm onLoginSuccess={handleLoginSuccess} />
         </DialogContent>
       </Dialog>
     </div>
