@@ -19,7 +19,12 @@ export const validateClassData = (classData: Partial<ClassSession>): boolean => 
 
 // Prepare class data for database
 export const prepareClassData = (classData: Partial<ClassSession>) => {
-  const dayOfWeek = new Date(classData.date as string).toLocaleDateString('en-US', { weekday: 'long' });
+  if (!classData.date) {
+    throw new Error("Date is required");
+  }
+  
+  const dayOfWeek = new Date(classData.date).toLocaleDateString('en-US', { weekday: 'long' });
+  
   return { 
     date: classData.date, 
     day: dayOfWeek,

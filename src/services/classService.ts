@@ -34,9 +34,21 @@ export const fetchClassesFromSupabase = async () => {
 
 // Create a new class
 export const createClass = async (classData: Partial<ClassSession>) => {
+  // Make sure the required fields are present
+  if (!classData.date || !classData.day || !classData.start_time || !classData.end_time) {
+    throw new Error('Missing required fields: date, day, start_time, and end_time are required');
+  }
+
   const { error } = await supabase
     .from('classes')
-    .insert([classData]);
+    .insert({
+      date: classData.date,
+      day: classData.day,
+      start_time: classData.start_time,
+      end_time: classData.end_time,
+      mode: classData.mode || 'online',
+      meet_link: classData.mode === 'offline' ? null : (classData.meet_link || defaultMeetLink)
+    });
     
   if (error) throw error;
 };
