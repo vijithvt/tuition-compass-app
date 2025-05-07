@@ -131,7 +131,7 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
         {/* Progress Summary for non-logged users */}
         {!isLoggedIn && <NonUserProgressSummary />}
         
-        {/* Progress Summary for logged-in users (without Live Teaching Hours) */}
+        {/* Progress Summary for logged-in users */}
         {isLoggedIn && (
           <ProgressSummary 
             modules={processedModules}
@@ -157,12 +157,6 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           </div>
         </div>
         
-        {/* C Compiler Section */}
-        <CCompiler />
-        
-        {/* Practice Questions Section */}
-        <PracticeQuestions />
-        
         {/* Classes Section - Only show completed for non-logged users */}
         <div id="classes" className="mb-12">
           <ClassSchedule 
@@ -172,12 +166,20 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           />
         </div>
 
+        {/* Modules Section with updated styling */}
         <ModulesSection 
           modules={processedModules} 
           isLoggedIn={isLoggedIn}
         />
         
+        {/* C Compiler Section - Moved before Materials */}
+        <CCompiler />
+        
+        {/* Materials Panel */}
         <MaterialsPanel isEditable={isLoggedIn} />
+        
+        {/* Practice Questions Section - Only visible for logged in users */}
+        {isLoggedIn && <PracticeQuestions />}
       </main>
       
       <FooterSection />

@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Material } from '@/types';
-import { Download } from 'lucide-react';
+import { Download, Eye, EyeOff } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface MaterialItemProps {
   material: Material;
@@ -13,6 +14,20 @@ interface MaterialItemProps {
 }
 
 const MaterialItem: React.FC<MaterialItemProps> = ({ material, module, isEditable, onEdit, onDelete }) => {
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false);
+
+  // Function to get file extension from URL
+  const getFileExtension = (url: string) => {
+    // Remove any URL parameters
+    const cleanUrl = url.split('?')[0];
+    // Get the file extension
+    const extension = cleanUrl.split('.').pop()?.toLowerCase();
+    return extension || '';
+  };
+
+  const fileExtension = getFileExtension(material.fileUrl);
+  const isPdf = fileExtension === 'pdf' || material.fileType === 'pdf';
+
   return (
     <div className="bg-white p-4 rounded-lg shadow border relative hover:shadow-md transition-all animate-fade-in">
       {isEditable && (
@@ -40,13 +55,51 @@ const MaterialItem: React.FC<MaterialItemProps> = ({ material, module, isEditabl
             {material.description && <p className="text-sm mt-1">{material.description}</p>}
           </div>
         </div>
-        <Button variant="outline" size="sm" asChild className="ml-2 flex items-center gap-1">
-          <a href={material.fileUrl} download>
+        <div className="flex gap-2">
+          {isPdf && (
+            <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={() => setPdfViewerOpen(true)}>
+              <Eye size={14} />
+              <span>View</span>
+            </Button>
+          )}
+          <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={() => {
+            // Create a temporary anchor element to force proper download
+            const link = document.createElement('a');
+            link.href = material.fileUrl;
+            link.download = `${material.title}.${fileExtension || 'pdf'}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }}>
             <Download size={14} />
             <span>Download</span>
-          </a>
-        </Button>
+          </Button>
+        </div>
       </div>
+
+      {/* PDF Viewer Dialog */}
+      {isPdf && (
+        <Dialog open={pdfViewerOpen} onOpenChange={setPdfViewerOpen}>
+          <DialogContent className="max-w-4xl h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>{material.title}</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 h-full min-h-[500px] w-full">
+              <iframe
+                src={`${material.fileUrl}#toolbar=0&navpanes=0`}
+                className="w-full h-full border-0"
+                title={material.title}
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setPdfViewerOpen(false)}>
+                <EyeOff className="mr-2 h-4 w-4" />
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
