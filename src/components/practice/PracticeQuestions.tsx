@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,11 +10,11 @@ const PracticeQuestions: React.FC = () => {
   const [markedQuestions, setMarkedQuestions] = useState<string[]>([]);
 
   const toggleMark = (questionId: string) => {
-    if (markedQuestions.includes(questionId)) {
-      setMarkedQuestions(markedQuestions.filter(id => id !== questionId));
-    } else {
-      setMarkedQuestions([...markedQuestions, questionId]);
-    }
+    setMarkedQuestions(prev => 
+      prev.includes(questionId) 
+        ? prev.filter(id => id !== questionId)
+        : [...prev, questionId]
+    );
   };
 
   return (
@@ -30,6 +31,7 @@ const PracticeQuestions: React.FC = () => {
               <TabsTrigger value="subjective">Subjective Questions</TabsTrigger>
             </TabsList>
 
+            {/* MCQ Tab Content */}
             <TabsContent value="mcq" className="mt-4 space-y-6">
               <div className="filters flex flex-wrap gap-2 mb-4">
                 <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-white">Module 1</Badge>
@@ -54,6 +56,7 @@ const PracticeQuestions: React.FC = () => {
                 <div className="mt-2">
                   <p className="font-medium">Which of the following is not a valid C variable name?</p>
                   <div className="mt-3 space-y-2">
+                    {/* Answer options */}
                     <div className="flex items-center space-x-2">
                       <input type="radio" name="mcq1" id="mcq1_a" />
                       <label htmlFor="mcq1_a">int_count</label>
@@ -84,60 +87,12 @@ const PracticeQuestions: React.FC = () => {
                 </div>
               </div>
 
-              {/* Sample MCQ Question 2 */}
-              <div className="bg-white p-4 rounded-lg border hover:shadow-md transition-all">
-                <div className="flex justify-between">
-                  <Badge>Module 2</Badge>
-                  <button 
-                    onClick={() => toggleMark('mcq2')}
-                    className={`text-sm flex items-center gap-1 ${markedQuestions.includes('mcq2') ? 'text-primary' : 'text-gray-400'}`}
-                  >
-                    <Bookmark size={16} className={markedQuestions.includes('mcq2') ? 'fill-primary' : ''} />
-                    {markedQuestions.includes('mcq2') ? 'Marked' : 'Mark for Revision'}
-                  </button>
-                </div>
-                <div className="mt-2">
-                  <p className="font-medium">What is the output of the following code snippet?</p>
-                  <pre className="bg-gray-100 p-2 rounded text-xs mt-2">
-                    {`int arr[5] = {1, 2, 3, 4, 5};
-printf("%d", arr[5]);`}
-                  </pre>
-                  <div className="mt-3 space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input type="radio" name="mcq2" id="mcq2_a" />
-                      <label htmlFor="mcq2_a">5</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="radio" name="mcq2" id="mcq2_b" />
-                      <label htmlFor="mcq2_b">Garbage value</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="radio" name="mcq2" id="mcq2_c" />
-                      <label htmlFor="mcq2_c">0</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="radio" name="mcq2" id="mcq2_d" />
-                      <label htmlFor="mcq2_d">Compilation error</label>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-between">
-                    <Button size="sm" variant="outline" className="flex items-center gap-1">
-                      <Check size={14} />
-                      Check Answer
-                    </Button>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Clock size={14} className="mr-1" />
-                      KTU 2022 Midterm
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <div className="flex justify-center mt-6">
                 <Button>Load More Questions</Button>
               </div>
             </TabsContent>
 
+            {/* Coding Tab Content */}
             <TabsContent value="coding" className="mt-4">
               <div className="bg-white p-4 rounded-lg border hover:shadow-md transition-all mb-4">
                 <div className="flex justify-between">
@@ -166,6 +121,7 @@ printf("%d", arr[5]);`}
               </div>
             </TabsContent>
 
+            {/* Subjective Tab Content */}
             <TabsContent value="subjective" className="mt-4">
               <div className="bg-white p-4 rounded-lg border hover:shadow-md transition-all mb-4">
                 <div className="flex justify-between">
