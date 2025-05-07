@@ -26,7 +26,7 @@ const MaterialItem: React.FC<MaterialItemProps> = ({ material, module, isEditabl
   };
 
   const fileExtension = getFileExtension(material.fileUrl);
-  const isPdf = fileExtension === 'pdf' || material.fileType === 'pdf';
+  const isPdf = fileExtension === 'pdf';
 
   return (
     <div className="bg-white p-4 rounded-lg shadow border relative hover:shadow-md transition-all animate-fade-in">

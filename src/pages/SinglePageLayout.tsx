@@ -1,16 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { moduleData } from '../data/moduleData';
 import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
 
 // Layout components
 import HeaderSection from '../components/layout/HeaderSection';
 import FooterSection from '../components/layout/FooterSection';
 
 // Dashboard components
-import ModulesSection from '../components/dashboard/ModulesSection';
 import ProgressSummary from '../components/dashboard/ProgressSummary';
 import NonUserProgressSummary from '../components/dashboard/NonUserProgressSummary';
 import CourseInfoSection from '../components/dashboard/CourseInfoSection';
@@ -22,13 +21,6 @@ import ClassSchedule from '../components/schedule/ClassSchedule';
 
 // Auth components
 import LoginForm from '../components/auth/LoginForm';
-
-// Materials components
-import MaterialsPanel from '../components/materials/MaterialsPanel';
-
-// New components
-import CCompiler from '../components/compiler/CCompiler';
-import PracticeQuestions from '../components/practice/PracticeQuestions';
 
 // Types and utilities
 import { ClassSession } from '@/types';
@@ -128,23 +120,28 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
       />
       
       <main className="flex-grow container mx-auto px-4 py-6">
-        {/* Progress Summary for non-logged users */}
-        {!isLoggedIn && <NonUserProgressSummary />}
-        
-        {/* Progress Summary for logged-in users */}
-        {isLoggedIn && (
+        {/* Progress Summary for all users */}
+        {isLoggedIn ? (
           <ProgressSummary 
             modules={processedModules}
             classes={classes}
           />
+        ) : (
+          <NonUserProgressSummary />
         )}
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="md:col-span-1">
-            <CourseInfoSection 
-              examDate={examDate}
-              nextClass={null}
-            />
+            {/* CourseInfoSection without Class Hours Breakdown */}
+            <Card className="h-full">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-bold mb-4">Course Details</h2>
+                <div className="mb-4">
+                  <p className="text-gray-600"><span className="font-medium">Tutor:</span> Vijith V T</p>
+                  <p className="text-gray-600"><span className="font-medium">Student:</span> Aadira Philip</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
           <div className="md:col-span-1">
             <ExamCountdown 
@@ -166,20 +163,7 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           />
         </div>
 
-        {/* Modules Section with updated styling */}
-        <ModulesSection 
-          modules={processedModules} 
-          isLoggedIn={isLoggedIn}
-        />
-        
-        {/* C Compiler Section - Moved before Materials */}
-        <CCompiler />
-        
-        {/* Materials Panel */}
-        <MaterialsPanel isEditable={isLoggedIn} />
-        
-        {/* Practice Questions Section - Only visible for logged in users */}
-        {isLoggedIn && <PracticeQuestions />}
+        {/* The following sections are hidden as per the user's request */}
       </main>
       
       <FooterSection />
