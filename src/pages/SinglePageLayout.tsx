@@ -118,17 +118,14 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
         onLogout={onLogout}
         nextClass={nextClass}
       />
-      
+
       <main className="flex-grow container mx-auto px-4 py-6">
-        {/* Progress Summary for all users */}
-        {isLoggedIn ? (
-          <ProgressSummary 
-            modules={processedModules}
-            classes={classes}
-          />
-        ) : (
-          <NonUserProgressSummary />
-        )}
+        {/* Show full progress summary for all users */}
+        <ProgressSummary 
+          modules={processedModules}
+          classes={classes}
+          isLoggedIn={isLoggedIn} // Optional: useful if you want to tweak behavior inside
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="md:col-span-1">

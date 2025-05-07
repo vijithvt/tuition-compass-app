@@ -7,6 +7,7 @@ import { differenceInMinutes, parseISO, format } from 'date-fns';
 interface ProgressSummaryProps {
   modules: Module[];
   classes: ClassSession[];
+  isLoggedIn: boolean;
 }
 
 const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) => {
@@ -99,8 +100,8 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
   return (
     <div className="mb-8 bg-white rounded-lg border shadow-sm p-6 hover:shadow-md transition-all animate-fade-in">
       <h2 className="text-2xl font-bold mb-4">Progress Summary</h2>
-      
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    
+      {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="bg-secondary/20 rounded-lg p-4 hover:scale-105 transition-transform">
           <h3 className="text-lg font-medium mb-1">Overall Progress</h3>
           <div className="flex items-center mb-2">
@@ -133,11 +134,13 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
             <span className="font-medium">{notStartedLessons}</span> lessons not started
           </div>
         </div>
-      </div>
+      </div> */}
       
+
+
       {/* Add extra class progress details */}
       <div className="mt-6 pt-4 border-t">
-        <h3 className="text-lg font-medium mb-3">Class Hours Breakdown</h3>
+        <h3 className="text-lg font-medium mb-3">Overall Progress</h3>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-all">
             <h4 className="font-medium mb-1 text-slate-600">Completed</h4>
