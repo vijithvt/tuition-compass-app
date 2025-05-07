@@ -102,6 +102,19 @@
   button, a, input[type="checkbox"], input[type="radio"], select {
     @apply min-h-10 min-w-10;
   }
+  
+  /* Code and syntax highlighting */
+  code {
+    @apply bg-gray-100 px-1 py-0.5 rounded text-sm font-mono;
+  }
+  
+  pre {
+    @apply bg-gray-800 text-gray-100 p-4 rounded-lg overflow-auto my-4;
+  }
+  
+  pre code {
+    @apply bg-transparent p-0 text-gray-100;
+  }
 }
 
 @layer components {
@@ -155,10 +168,53 @@
     @apply animate-slide-in;
   }
   
+  /* Code syntax highlighting */
+  .code-keyword {
+    @apply text-purple-500 font-semibold;
+  }
+  
+  .code-string {
+    @apply text-green-500;
+  }
+  
+  .code-comment {
+    @apply text-gray-400 italic;
+  }
+  
+  .code-function {
+    @apply text-blue-500;
+  }
+  
+  /* Difficulty levels */
+  .difficulty-beginner {
+    @apply bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs;
+  }
+  
+  .difficulty-intermediate {
+    @apply bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs;
+  }
+  
+  .difficulty-advanced {
+    @apply bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs;
+  }
+  
+  /* Modern card designs */
+  .card-modern {
+    @apply bg-white rounded-xl border shadow-sm hover:shadow-md transition-all duration-300;
+  }
+  
+  .hero-banner {
+    @apply bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-12 px-6 rounded-xl shadow-lg;
+  }
+  
   /* Mobile Navigation Improvements */
   @media (max-width: 640px) {
     .card-header {
       @apply flex-col items-start space-y-2;
+    }
+    
+    .hero-banner {
+      @apply py-8 px-4;
     }
   }
 }
@@ -171,4 +227,15 @@
 @keyframes slide-in {
   from { transform: translateY(10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+/* Code typing animation */
+.typing-animation::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
 }

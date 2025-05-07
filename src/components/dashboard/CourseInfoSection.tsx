@@ -15,25 +15,21 @@ const CourseInfoSection: React.FC<CourseInfoSectionProps> = ({ examDate }) => {
         <div className="mb-4">
           <p className="text-gray-600"><span className="font-medium">Tutor:</span> Vijith V T</p>
           <p className="text-gray-600"><span className="font-medium">Student:</span> Aadira Philip</p>
-          <p className="text-gray-600 mt-2"><span className="font-medium">Course:</span> C Programming</p>
-          <p className="text-gray-600"><span className="font-medium">Scheme:</span> KTU B.Tech 2024</p>
         </div>
         
         <div className="mt-4 pt-4 border-t">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="font-medium">Progress Stats</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                <span className="font-medium">Completed Lessons:</span> 12/24
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Live Hours:</span> 18h completed
-              </p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-lg text-center">
-              <p className="text-sm text-muted-foreground">Overall Progress</p>
-              <p className="text-2xl font-bold text-primary">48%</p>
-            </div>
+          <div className="flex flex-col space-y-4">
+            <h3 className="font-medium">Exam Information</h3>
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium">Date:</span> {examDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium">Time Remaining:</span> {Math.ceil((examDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days
+            </p>
           </div>
         </div>
       </CardContent>

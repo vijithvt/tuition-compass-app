@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 // Layout components
 import HeaderSection from '../components/layout/HeaderSection';
 import FooterSection from '../components/layout/FooterSection';
+import Navbar from '../components/layout/Navbar';
 
 // Dashboard components
 import ModulesSection from '../components/dashboard/ModulesSection';
@@ -122,6 +123,46 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
       />
       
       <main className="flex-grow container mx-auto px-4 py-6">
+        {/* Non-logged users see simplified progress summary */}
+        {!isLoggedIn && (
+          <div className="mb-8 bg-white rounded-lg border shadow-sm p-6">
+            <h2 className="text-2xl font-bold mb-4">Course Progress</h2>
+            
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-4">
+              {/* Progress Statistics */}
+              <div className="bg-success/10 rounded-lg p-4">
+                <h3 className="text-lg font-medium mb-1">Completed</h3>
+                <p className="text-3xl font-bold">12</p>
+                <p className="text-sm text-muted-foreground mt-1">of 24 lessons</p>
+              </div>
+              
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h3 className="text-lg font-medium mb-1">Planned</h3>
+                <p className="text-3xl font-bold">24</p>
+                <p className="text-sm text-muted-foreground mt-1">total lessons</p>
+              </div>
+              
+              <div className="bg-warning/10 rounded-lg p-4">
+                <h3 className="text-lg font-medium mb-1">Remaining</h3>
+                <p className="text-3xl font-bold">12</p>
+                <p className="text-sm text-muted-foreground mt-1">lessons to complete</p>
+              </div>
+            </div>
+            
+            {/* Overall Progress Bar */}
+            <div className="mt-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-medium">Overall Progress</h3>
+                <span className="text-lg font-bold">50%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="bg-primary h-2.5 rounded-full" style={{ width: '50%' }}></div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Progress Summary for logged-in users */}
         {isLoggedIn && (
           <ProgressSummary 
             modules={processedModules}
@@ -133,16 +174,11 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           <div className="md:col-span-2">
             <CourseInfoSection 
               examDate={examDate}
-              nextClass={null} // Remove NextClass from CourseInfoSection
+              nextClass={null}
             />
           </div>
-          <div className="md:col-span-1">
-            {nextClass && (
-              <ClassSchedule 
-                isEditable={false}
-                displayMode="nextOnly"
-              />
-            )}
+          <div className="md:col-span-1 flex flex-col space-y-4">
+            <QuoteCard />
           </div>
         </div>
         
@@ -160,8 +196,6 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
         />
         
         <MaterialsPanel isEditable={isLoggedIn} />
-        
-        <QuoteCard />
       </main>
       
       <FooterSection />
