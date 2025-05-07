@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Material } from '@/types';
+import { Download } from 'lucide-react';
 
 interface MaterialItemProps {
   material: Material;
@@ -13,7 +14,7 @@ interface MaterialItemProps {
 
 const MaterialItem: React.FC<MaterialItemProps> = ({ material, module, isEditable, onEdit, onDelete }) => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow border relative">
+    <div className="bg-white p-4 rounded-lg shadow border relative hover:shadow-md transition-all animate-fade-in">
       {isEditable && (
         <div className="absolute top-2 right-2 flex space-x-1">
           <button 
@@ -30,20 +31,20 @@ const MaterialItem: React.FC<MaterialItemProps> = ({ material, module, isEditabl
           </button>
         </div>
       )}
-      <div className="flex-1">
-        <h4 className="font-medium">{material.title}</h4>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm text-gray-600">
-          <span>{module}</span>
-          {material.uploadDate && <span className="text-xs">Uploaded on {material.uploadDate}</span>}
-          {material.description && <p className="text-sm mt-1">{material.description}</p>}
+      <div className="flex justify-between items-center">
+        <div className="flex-1">
+          <h4 className="font-medium">{material.title}</h4>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm text-gray-600">
+            <span>{module}</span>
+            {material.uploadDate && <span className="text-xs">Uploaded on {material.uploadDate}</span>}
+            {material.description && <p className="text-sm mt-1">{material.description}</p>}
+          </div>
         </div>
-      </div>
-      <div className="flex items-center space-x-2 mt-3">
-        <Button variant="outline" size="sm" asChild>
-          <a href={material.fileUrl} target="_blank" rel="noreferrer">View</a>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <a href={material.fileUrl} download>Download</a>
+        <Button variant="outline" size="sm" asChild className="ml-2 flex items-center gap-1">
+          <a href={material.fileUrl} download>
+            <Download size={14} />
+            <span>Download</span>
+          </a>
         </Button>
       </div>
     </div>

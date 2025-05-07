@@ -15,14 +15,12 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
     completedLessons, 
     inProgressLessons, 
     notStartedLessons, 
-    completedDuration,
     totalEstimatedHours
   } = useMemo(() => {
     let total = 0;
     let completed = 0;
     let inProgress = 0;
     let notStarted = 0;
-    let completedDuration = 0;
     
     modules.forEach(module => {
       module.lessons.forEach(lesson => {
@@ -30,9 +28,6 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
         
         if (lesson.status === 'completed') {
           completed++;
-          if (lesson.duration) {
-            completedDuration += lesson.duration;
-          }
         } else if (lesson.status === 'in-progress') {
           inProgress++;
         } else {
@@ -49,7 +44,6 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
       completedLessons: completed,
       inProgressLessons: inProgress,
       notStartedLessons: notStarted,
-      completedDuration,
       totalEstimatedHours
     };
   }, [modules]);
@@ -103,11 +97,11 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
     Math.round((teachingHours.completed.hours / teachingHours.planned.hours) * 100) : 0;
 
   return (
-    <div className="mb-8 bg-white rounded-lg border shadow-sm p-6">
+    <div className="mb-8 bg-white rounded-lg border shadow-sm p-6 hover:shadow-md transition-all animate-fade-in">
       <h2 className="text-2xl font-bold mb-4">Progress Summary</h2>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-secondary/20 rounded-lg p-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="bg-secondary/20 rounded-lg p-4 hover:scale-105 transition-transform">
           <h3 className="text-lg font-medium mb-1">Overall Progress</h3>
           <div className="flex items-center mb-2">
             <Progress value={overallProgress} className="flex-1 mr-2" />
@@ -121,7 +115,7 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
           </div>
         </div>
         
-        <div className="bg-success/10 rounded-lg p-4">
+        <div className="bg-success/10 rounded-lg p-4 hover:scale-105 transition-transform">
           <h3 className="text-lg font-medium mb-1">Course Completion</h3>
           <p className="text-3xl font-bold">{completedLessons}</p>
           <div className="flex items-center mt-2">
@@ -131,7 +125,7 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
           <p className="text-sm text-muted-foreground mt-1">of {totalLessons} lessons</p>
         </div>
         
-        <div className="bg-warning/10 rounded-lg p-4">
+        <div className="bg-warning/10 rounded-lg p-4 hover:scale-105 transition-transform">
           <h3 className="text-lg font-medium mb-1">In Progress</h3>
           <p className="text-3xl font-bold">{inProgressLessons}</p>
           <p className="text-sm text-muted-foreground">lessons currently active</p>
@@ -139,44 +133,37 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ modules, classes }) =
             <span className="font-medium">{notStartedLessons}</span> lessons not started
           </div>
         </div>
-        
-        <div className="bg-blue-50 rounded-lg p-4">
-          <h3 className="text-lg font-medium mb-1">Live Teaching Hours</h3>
-          <p className="text-3xl font-bold">
-            {teachingHours.completed.hours}h {teachingHours.completed.minutes}m
-          </p>
-          <div className="flex items-center mt-2">
-            <Progress value={hoursProgress} className="flex-1 mr-2" />
-            <span className="font-medium">{hoursProgress}%</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            {teachingHours.remaining.hours}h {teachingHours.remaining.minutes}m remaining
-          </p>
-        </div>
       </div>
       
       {/* Add extra class progress details */}
       <div className="mt-6 pt-4 border-t">
         <h3 className="text-lg font-medium mb-3">Class Hours Breakdown</h3>
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="bg-slate-50 p-4 rounded-lg">
+          <div className="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-all">
             <h4 className="font-medium mb-1 text-slate-600">Completed</h4>
             <p className="text-2xl font-bold text-primary">
               {teachingHours.completed.hours}h {teachingHours.completed.minutes}m
             </p>
           </div>
-          <div className="bg-slate-50 p-4 rounded-lg">
+          <div className="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-all">
             <h4 className="font-medium mb-1 text-slate-600">Planned</h4>
             <p className="text-2xl font-bold text-slate-700">
               {teachingHours.planned.hours}h {teachingHours.planned.minutes}m
             </p>
           </div>
-          <div className="bg-slate-50 p-4 rounded-lg">
+          <div className="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-all">
             <h4 className="font-medium mb-1 text-slate-600">Remaining</h4>
             <p className="text-2xl font-bold text-blue-600">
               {teachingHours.remaining.hours}h {teachingHours.remaining.minutes}m
             </p>
           </div>
+        </div>
+        <div className="mt-4">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-sm">Hours Progress</span>
+            <span className="text-sm font-medium">{hoursProgress}%</span>
+          </div>
+          <Progress value={hoursProgress} className="h-2" />
         </div>
       </div>
     </div>
