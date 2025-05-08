@@ -12,7 +12,6 @@ import FooterSection from '../components/layout/FooterSection';
 
 // Dashboard components
 import ProgressSummary from '../components/dashboard/ProgressSummary';
-import NonUserProgressSummary from '../components/dashboard/NonUserProgressSummary';
 import CourseInfoSection from '../components/dashboard/CourseInfoSection';
 import ExamCountdown from '../components/dashboard/ExamCountdown';
 import QuoteCard from '../components/dashboard/QuoteCard';
@@ -26,7 +25,6 @@ import LoginForm from '../components/auth/LoginForm';
 
 // Types and utilities
 import { ClassSession } from '@/types';
-import { isPast } from 'date-fns';
 
 interface SinglePageLayoutProps {
   isLoggedIn: boolean;
@@ -153,7 +151,7 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           </div>
         </div>
         
-        {/* New Dynamic Course Progress Section */}
+        {/* Course Progress - Enhanced to show individual topics */}
         <CourseProgress isLoggedIn={isLoggedIn} />
         
         {/* Classes Section - Only show completed for non-logged users */}

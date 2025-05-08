@@ -2,11 +2,12 @@
 import { useState, useEffect } from 'react';
 import { Module, Lesson, LessonStatus } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export const useModuleProgress = (initialModules: Module[]) => {
   const [modules, setModules] = useState<Module[]>(initialModules);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   // Load lesson progress from database when component mounts
   useEffect(() => {
@@ -20,6 +21,11 @@ export const useModuleProgress = (initialModules: Module[]) => {
       
       if (error) {
         console.error('Error fetching lesson progress:', error);
+        toast({
+          variant: "destructive",
+          title: "Error loading progress",
+          description: "Could not load your saved progress."
+        });
         return;
       }
       
@@ -39,9 +45,41 @@ export const useModuleProgress = (initialModules: Module[]) => {
         }));
         
         setModules(updatedModules);
+      } else if (data && data.length === 0) {
+        // If no data, set all module 1 lessons to completed by default
+        const defaultModules = initialModules.map(module => ({
+          ...module,
+          lessons: module.lessons.map(lesson => {
+            // If it's module 1, set all lessons to completed by default
+            if (module.id === 'module-1') {
+              // First save to database
+              supabase.from('lesson_progress').upsert({
+                module_id: module.id,
+                lesson_id: lesson.id,
+                status: 'completed',
+                updated_at: new Date().toISOString()
+              }, {
+                onConflict: 'module_id,lesson_id'
+              }).then(() => {
+                console.log(`Initialized ${lesson.title} as completed`);
+              });
+              
+              // Return the lesson with completed status
+              return { ...lesson, status: 'completed' };
+            }
+            return lesson;
+          })
+        }));
+        
+        setModules(defaultModules);
       }
     } catch (error) {
-      console.error('Error fetching lesson progress:', error);
+      console.error('Error in fetchLessonProgress:', error);
+      toast({
+        variant: "destructive",
+        title: "Error loading progress",
+        description: "An unexpected error occurred."
+      });
     } finally {
       setIsLoading(false);
     }
@@ -84,17 +122,12 @@ export const useModuleProgress = (initialModules: Module[]) => {
         )
       );
       
-      toast({
-        title: "Lesson status updated",
-        description: `Lesson status has been set to ${status}`,
-      });
-      
       return true;
     } catch (error) {
       console.error('Error updating lesson status:', error);
       toast({
         variant: "destructive",
-        title: "Failed to update lesson status",
+        title: "Failed to update topic status",
         description: "Please try again later."
       });
       return false;

@@ -1,9 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
 import { Module, Lesson, LessonStatus } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CirclePlus, Check, Circle, CircleDot, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, Circle, CircleDot, ChevronDown, ChevronUp } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +33,7 @@ const ProgressSummaryCard = ({ modules }: { modules: Module[] }) => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-50 rounded-xl p-4 text-center">
           <span className="text-2xl font-bold text-gray-700">{totalLessons}</span>
-          <p className="text-sm text-gray-500">Total Lessons</p>
+          <p className="text-sm text-gray-500">Total Topics</p>
         </div>
         
         <div className="bg-green-50 rounded-xl p-4 text-center">
@@ -96,8 +95,8 @@ const StatusBadge = ({ status }: { status: LessonStatus }) => {
   }
 };
 
-// Component for individual Lesson Cards
-const LessonStatusItem = ({ 
+// Component for individual Topic Status Item
+const TopicStatusItem = ({ 
   lesson, 
   moduleId,
   onChange 
@@ -137,13 +136,15 @@ const LessonStatusItem = ({
 // Component for Module Sections with Collapsible Lessons
 const ModuleSection = ({ 
   module, 
-  onStatusChange 
+  onStatusChange,
+  isOpen,
+  onToggle
 }: { 
   module: Module, 
-  onStatusChange: (moduleId: string, lessonId: string, status: LessonStatus) => void 
+  onStatusChange: (moduleId: string, lessonId: string, status: LessonStatus) => void,
+  isOpen: boolean,
+  onToggle: () => void
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  
   // Calculate module completion percentage
   const totalLessons = module.lessons.length;
   const completedLessons = module.lessons.filter(lesson => lesson.status === 'completed').length;
@@ -151,7 +152,7 @@ const ModuleSection = ({
   
   return (
     <Card className="mb-4 overflow-hidden">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen} onOpenChange={onToggle}>
         <CollapsibleTrigger className="w-full text-left p-0">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-white cursor-pointer">
             <div className="flex justify-between items-center">
@@ -167,7 +168,7 @@ const ModuleSection = ({
         <CollapsibleContent>
           <CardContent className="pt-4 pb-2 space-y-2 bg-gray-50">
             {module.lessons.map((lesson) => (
-              <LessonStatusItem 
+              <TopicStatusItem 
                 key={lesson.id}
                 lesson={lesson}
                 moduleId={module.id}
@@ -185,22 +186,27 @@ const ModuleSection = ({
 const CourseProgress = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
   const { toast } = useToast();
   const { modules, updateLessonStatus, isLoading } = useModuleProgress(moduleData);
+  const [openModuleId, setOpenModuleId] = useState<string | null>("module-1"); // Default to open first module
 
   const handleStatusChange = async (moduleId: string, lessonId: string, newStatus: LessonStatus) => {
     try {
       await updateLessonStatus(moduleId, lessonId, newStatus);
       toast({
         title: 'Progress Updated',
-        description: `Lesson status changed to ${newStatus.replace('-', ' ')}`,
+        description: `Topic status changed to ${newStatus.replace('-', ' ')}`,
       });
     } catch (error) {
       console.error('Error updating lesson status:', error);
       toast({
         variant: "destructive",
         title: 'Error',
-        description: 'Failed to update lesson progress.',
+        description: 'Failed to update topic progress.',
       });
     }
+  };
+
+  const toggleModule = (moduleId: string) => {
+    setOpenModuleId(openModuleId === moduleId ? null : moduleId);
   };
 
   if (isLoading) {
@@ -224,6 +230,8 @@ const CourseProgress = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
             key={module.id}
             module={module}
             onStatusChange={handleStatusChange}
+            isOpen={openModuleId === module.id}
+            onToggle={() => toggleModule(module.id)}
           />
         ))}
       </div>
