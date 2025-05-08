@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,6 +16,7 @@ import NonUserProgressSummary from '../components/dashboard/NonUserProgressSumma
 import CourseInfoSection from '../components/dashboard/CourseInfoSection';
 import ExamCountdown from '../components/dashboard/ExamCountdown';
 import QuoteCard from '../components/dashboard/QuoteCard';
+import CourseProgress from '../components/dashboard/CourseProgress';
 
 // Schedule components
 import ClassSchedule from '../components/schedule/ClassSchedule';
@@ -151,6 +153,9 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
           </div>
         </div>
         
+        {/* New Dynamic Course Progress Section */}
+        <CourseProgress isLoggedIn={isLoggedIn} />
+        
         {/* Classes Section - Only show completed for non-logged users */}
         <div id="classes" className="mb-12">
           <ClassSchedule 
@@ -159,8 +164,6 @@ const SinglePageLayout: React.FC<SinglePageLayoutProps> = ({ isLoggedIn, onLogin
             displayMode={isLoggedIn ? "full" : "completedOnly"}
           />
         </div>
-
-        {/* The following sections are hidden as per the user's request */}
       </main>
       
       <FooterSection />

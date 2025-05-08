@@ -4,7 +4,6 @@ import { Module } from '../../types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, ChevronDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { useModuleProgress } from '../../hooks/useModuleProgress';
 
 interface ModulesSectionProps {
@@ -117,7 +116,7 @@ Files- Different types of files in C, Opening & Closing a file, Writing to and R
                     <div className="p-4 border-t bg-gray-50 animate-fade-in">
                       {/* Module content description */}
                       <div className="mb-4 text-gray-700">
-                        {curriculumOutline.find(m => m.id === `module-${module.id.split('-')[1]}`)?.content || 
+                        {curriculumOutline.find(m => m.id === module.id)?.content || 
                           "Module content description."}
                       </div>
                       
