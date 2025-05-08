@@ -99,11 +99,13 @@ const StatusBadge = ({ status }: { status: LessonStatus }) => {
 const TopicStatusItem = ({ 
   lesson, 
   moduleId,
-  onChange 
+  onChange,
+  isEditable
 }: { 
   lesson: Lesson, 
   moduleId: string,
-  onChange: (moduleId: string, lessonId: string, status: LessonStatus) => void 
+  onChange: (moduleId: string, lessonId: string, status: LessonStatus) => void,
+  isEditable: boolean
 }) => {
   return (
     <div className="flex justify-between items-center p-3 border border-gray-100 rounded-lg bg-white hover:bg-gray-50 transition duration-150">
@@ -116,19 +118,23 @@ const TopicStatusItem = ({
         <span className="font-medium">{lesson.title}</span>
       </div>
       
-      <Select 
-        value={lesson.status} 
-        onValueChange={(value: LessonStatus) => onChange(moduleId, lesson.id, value)}
-      >
-        <SelectTrigger className="w-32 h-8 text-xs">
-          <SelectValue placeholder="Set Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="not-started">Not Started</SelectItem>
-          <SelectItem value="in-progress">In Progress</SelectItem>
-          <SelectItem value="completed">Completed</SelectItem>
-        </SelectContent>
-      </Select>
+      {isEditable ? (
+        <Select 
+          value={lesson.status} 
+          onValueChange={(value: LessonStatus) => onChange(moduleId, lesson.id, value)}
+        >
+          <SelectTrigger className="w-32 h-8 text-xs">
+            <SelectValue placeholder="Set Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="not-started">Not Started</SelectItem>
+            <SelectItem value="in-progress">In Progress</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+      ) : (
+        <StatusBadge status={lesson.status} />
+      )}
     </div>
   );
 };
@@ -138,12 +144,14 @@ const ModuleSection = ({
   module, 
   onStatusChange,
   isOpen,
-  onToggle
+  onToggle,
+  isEditable
 }: { 
   module: Module, 
   onStatusChange: (moduleId: string, lessonId: string, status: LessonStatus) => void,
   isOpen: boolean,
-  onToggle: () => void
+  onToggle: () => void,
+  isEditable: boolean
 }) => {
   // Calculate module completion percentage
   const totalLessons = module.lessons.length;
@@ -173,6 +181,7 @@ const ModuleSection = ({
                 lesson={lesson}
                 moduleId={module.id}
                 onChange={onStatusChange}
+                isEditable={isEditable}
               />
             ))}
           </CardContent>
@@ -189,6 +198,15 @@ const CourseProgress = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
   const [openModuleId, setOpenModuleId] = useState<string | null>("module-1"); // Default to open first module
 
   const handleStatusChange = async (moduleId: string, lessonId: string, newStatus: LessonStatus) => {
+    if (!isLoggedIn) {
+      toast({
+        variant: "destructive",
+        title: 'Authentication Required',
+        description: 'You must be logged in as a tutor to update topic status.',
+      });
+      return;
+    }
+    
     try {
       await updateLessonStatus(moduleId, lessonId, newStatus);
       toast({
@@ -224,6 +242,12 @@ const CourseProgress = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
       
       <ProgressSummaryCard modules={modules} />
       
+      {!isLoggedIn && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-800">
+          <p><strong>Note:</strong> Sign in as a tutor to update topic progress.</p>
+        </div>
+      )}
+      
       <div className="space-y-4">
         {modules.map((module) => (
           <ModuleSection 
@@ -232,6 +256,7 @@ const CourseProgress = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
             onStatusChange={handleStatusChange}
             isOpen={openModuleId === module.id}
             onToggle={() => toggleModule(module.id)}
+            isEditable={isLoggedIn}
           />
         ))}
       </div>

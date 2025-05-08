@@ -56,7 +56,7 @@ export const useModuleProgress = (initialModules: Module[]) => {
               supabase.from('lesson_progress').upsert({
                 module_id: module.id,
                 lesson_id: lesson.id,
-                status: 'completed',
+                status: 'completed' as LessonStatus,
                 updated_at: new Date().toISOString()
               }, {
                 onConflict: 'module_id,lesson_id'
@@ -65,7 +65,7 @@ export const useModuleProgress = (initialModules: Module[]) => {
               });
               
               // Return the lesson with completed status
-              return { ...lesson, status: 'completed' };
+              return { ...lesson, status: 'completed' as LessonStatus };
             }
             return lesson;
           })
